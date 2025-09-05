@@ -1,229 +1,214 @@
-# 📅 Upcoming Sprints Overview
+# 📅 Upcoming Sprints - Simplified MVP Path
 
 **Last Updated:** January 9, 2025  
-**Current Sprint:** Ready for Sprint 1  
-**Total Sprints Planned:** 10
+**Current Sprint:** Sprint 1 (Active)  
+**Total Sprints:** 5 (Reduced from 10)
 
 ---
 
-## Sprint Timeline
+## 🎯 New Focus: MVP First, Enhancement Later
 
-### 🏃 Active/Next Sprint
-- **Sprint 1**: Core Architecture Refactor (Jan 9-12)
+We're pivoting from a 10-sprint "perfect architecture" to a 5-sprint "working MVP" approach.
 
-### 📋 Upcoming Sprints
+## 📊 Revised Sprint Timeline
 
-## Sprint 2: Dynamic Loading System
-**Duration:** 3-4 days  
-**Planned Start:** January 13, 2025
+| Sprint | Focus | Duration | Dates | Primary Goal |
+|--------|-------|----------|-------|--------------|
+| **Sprint 1** | Core Implementation | 3 days | Jan 9-11 | Make `/initproject` work |
+| **Sprint 2** | Basic Intelligence | 3 days | Jan 12-14 | Detect 3 project types |
+| **Sprint 3** | Enhanced Detection | 3 days | Jan 15-17 | Add framework detection |
+| **Sprint 4** | Polish & Testing | 3 days | Jan 18-20 | Production ready |
+| **Sprint 5** | Advanced Features | 4 days | Jan 21-24 | Only if 1-4 complete |
+
+---
+
+## Sprint 2: Basic Intelligence
+**Duration:** 3 days (Jan 12-14)  
+**Prerequisite:** Sprint 1 complete
 
 ### Goals
-- Implement dynamic subagent loading mechanism
-- Create standardized subagent interface
-- Build activation trigger system
-- Add configuration management
+- Add simple project type detection
+- Support JavaScript, Python, Go projects
+- Apply appropriate templates per type
+- Zero configuration required
 
-### Key Deliverables
-- Dynamic loader implementation
-- Subagent base class
-- Trigger detection system
-- Configuration system
+### Deliverables
+- [ ] Language detection logic
+- [ ] 3 project type templates
+- [ ] Auto-configuration based on type
+- [ ] Fallback for unknown types
 
----
+### Test Criteria
+```bash
+# Test JS project
+cd ~/react-app && /initproject
+# Should detect: JavaScript/React
 
-## Sprint 3: Memory Isolation
-**Duration:** 3-4 days  
-**Planned Start:** January 17, 2025
+# Test Python project  
+cd ~/django-app && /initproject
+# Should detect: Python/Django
 
-### Goals
-- Implement isolated vector databases per project
-- Create memory management system
-- Build knowledge accumulation features
-- Add semantic search capabilities
-
-### Key Deliverables
-- Isolated ChromaDB instances
-- Memory manager class
-- Knowledge persistence layer
-- Search integration
-
----
-
-## Sprint 4: Web Development Subagent
-**Duration:** 3-4 days  
-**Planned Start:** January 21, 2025
-
-### Goals
-- Create React project detection and assistance
-- Add Vue.js support
-- Implement Angular detection
-- Build component generation helpers
-
-### Key Deliverables
-- React subagent
-- Vue subagent
-- Angular subagent
-- Web framework utilities
-
----
-
-## Sprint 5: Backend & API Subagents
-**Duration:** 3-4 days  
-**Planned Start:** January 25, 2025
-
-### Goals
-- REST API development assistance
-- GraphQL schema support
-- Database design helpers
-- Authentication patterns
-
-### Key Deliverables
-- API subagent
-- Database subagent
-- Auth helpers
-- Backend utilities
-
----
-
-## Sprint 6: Specialized Subagents
-**Duration:** 3-4 days  
-**Planned Start:** January 29, 2025
-
-### Goals
-- Blockchain/Web3 development support
-- DevOps and infrastructure assistance
-- Testing framework integration
-- Build tool optimization
-
-### Key Deliverables
-- Blockchain subagent
-- DevOps subagent
-- Testing subagent
-- Build tool helpers
-
----
-
-## Sprint 7: Performance Optimization
-**Duration:** 3-4 days  
-**Planned Start:** February 2, 2025
-
-### Goals
-- Optimize load times to < 2 seconds
-- Reduce memory footprint
-- Implement intelligent caching
-- Token usage optimization
-
-### Key Deliverables
-- Performance benchmarks
-- Caching system
-- Memory optimizations
-- Token reduction strategies
-
----
-
-## Sprint 8: Error Handling & Edge Cases
-**Duration:** 3-4 days  
-**Planned Start:** February 6, 2025
-
-### Goals
-- Robust error handling throughout
-- Edge case identification and fixes
-- Recovery mechanism implementation
-- Fallback strategies
-
-### Key Deliverables
-- Error handling framework
-- Recovery mechanisms
-- Fallback patterns
-- Edge case coverage
-
----
-
-## Sprint 9: Testing & Quality
-**Duration:** 3-4 days  
-**Planned Start:** February 10, 2025
-
-### Goals
-- Achieve 95% test coverage
-- Integration testing suite
-- Performance testing
-- Security audit
-
-### Key Deliverables
-- Complete test suite
-- Performance tests
-- Security review
-- Bug fixes
-
----
-
-## Sprint 10: Documentation & Release
-**Duration:** 3-4 days  
-**Planned Start:** February 14, 2025
-
-### Goals
-- Complete user documentation
-- API documentation
-- Migration guides
-- Release preparation
-
-### Key Deliverables
-- User guides
-- API docs
-- Migration tools
-- Release package
-
----
-
-## 📊 Sprint Metrics Tracking
-
-| Sprint | Status | Start Date | End Date | Velocity | Coverage |
-|--------|--------|------------|----------|----------|----------|
-| Sprint 1 | Ready | Jan 9 | - | - | - |
-| Sprint 2 | Planned | Jan 13 | - | - | - |
-| Sprint 3 | Planned | Jan 17 | - | - | - |
-| Sprint 4 | Planned | Jan 21 | - | - | - |
-| Sprint 5 | Planned | Jan 25 | - | - | - |
-| Sprint 6 | Planned | Jan 29 | - | - | - |
-| Sprint 7 | Planned | Feb 2 | - | - | - |
-| Sprint 8 | Planned | Feb 6 | - | - | - |
-| Sprint 9 | Planned | Feb 10 | - | - | - |
-| Sprint 10 | Planned | Feb 14 | - | - | - |
-
-## 🎯 Cross-Sprint Dependencies
-
-### Critical Path
-```
-Sprint 1 (Architecture) → Sprint 2 (Loading) → Sprint 3 (Memory)
-                                ↓
-                    Sprint 4-6 (Subagents)
-                                ↓
-                    Sprint 7-8 (Optimization)
-                                ↓
-                    Sprint 9-10 (Polish)
+# Test unknown project
+cd ~/rust-app && /initproject
+# Should use: Generic template
 ```
 
-### Parallel Work Opportunities
-- Sprints 4-6 can have some parallel development
-- Documentation can be ongoing throughout
-- Testing infrastructure built in Sprint 1, expanded continuously
+---
 
-## 🔄 Adjustment Protocol
+## Sprint 3: Enhanced Detection
+**Duration:** 3 days (Jan 15-17)  
+**Prerequisite:** Sprint 2 complete
 
-Sprints may be adjusted based on:
-1. **Velocity trends** from completed sprints
-2. **Technical discoveries** that change scope
-3. **User feedback** from early testing
-4. **Performance benchmarks** that require optimization
+### Goals
+- Detect specific frameworks (React, Vue, Django, Flask)
+- Identify development tools (Docker, K8s)
+- Load framework-specific context
+- Performance under 2 seconds
 
-## 📝 Notes
+### Deliverables
+- [ ] Framework detection for JS (React, Vue, Angular)
+- [ ] Framework detection for Python (Django, Flask, FastAPI)
+- [ ] Tool detection (Docker, Kubernetes, etc.)
+- [ ] Context loading per framework
 
-- Each sprint includes time for documentation
-- Testing is integrated, not a separate phase
-- Regular demos at sprint boundaries
-- Flexibility built in for discoveries and pivots
+### Test Criteria
+```bash
+# Accuracy test
+./test-detection.sh
+# Expected: > 90% framework detection accuracy
+
+# Performance test
+time /initproject
+# Expected: < 2 seconds total time
+
+# Context test
+/session-start-[project]
+# Expected: Framework-specific help available
+```
 
 ---
 
-**Next Review:** End of Sprint 1  
-**Contact:** Update via SESSION_LOG.md
+## Sprint 4: Polish & Testing
+**Duration:** 3 days (Jan 18-20)  
+**Prerequisite:** Sprints 1-3 complete
+
+### Goals
+- Comprehensive error handling
+- Full test coverage
+- Performance optimization
+- Production documentation
+
+### Deliverables
+- [ ] Error handling for all edge cases
+- [ ] Integration test suite
+- [ ] Performance optimizations
+- [ ] User documentation
+- [ ] Installation guide
+
+### Test Criteria
+```bash
+# Coverage test
+npm test -- --coverage
+# Expected: > 80% coverage
+
+# Integration test
+./run-integration-tests.sh
+# Expected: All passing
+
+# Error handling test
+./test-edge-cases.sh
+# Expected: Graceful failures
+```
+
+---
+
+## Sprint 5: Advanced Features (Optional)
+**Duration:** 4 days (Jan 21-24)  
+**Prerequisite:** ALL previous sprints complete and stable
+
+### Goals (Only if time permits)
+- Simple subagent system
+- Project history tracking
+- Session continuity improvements
+- Basic learning capabilities
+
+### Deliverables
+- [ ] Basic subagent framework (if feasible)
+- [ ] Project usage tracking
+- [ ] Improved session persistence
+- [ ] Learning from patterns
+
+### Test Criteria
+- Only implement if Sprints 1-4 are fully complete
+- Each feature must be independently testable
+- No regression in basic functionality
+- Clear value demonstration required
+
+---
+
+## 🚨 Critical Success Factors
+
+### After Sprint 1
+- **Must Have:** `/initproject` command works
+- **Blocker Resolution:** All configuration issues fixed
+
+### After Sprint 2
+- **Must Have:** Basic project detection functional
+- **Quality Gate:** 3 project types supported
+
+### After Sprint 3
+- **Must Have:** Framework detection working
+- **Performance:** < 2 second initialization
+
+### After Sprint 4
+- **Must Have:** Production ready
+- **Quality:** > 80% test coverage
+- **Documentation:** Complete user guide
+
+### After Sprint 5
+- **Nice to Have:** Advanced features
+- **Only If:** Previous sprints 100% complete
+
+---
+
+## 📝 Risk Management
+
+### High Priority Risks
+1. **Sprint 1 Failure**
+   - Impact: Entire timeline blocked
+   - Mitigation: Focus only on making it work, skip fancy features
+   
+2. **Detection Complexity**
+   - Impact: Sprint 2-3 delays
+   - Mitigation: Start with simple patterns, enhance gradually
+
+3. **Testing Gaps**
+   - Impact: Production issues
+   - Mitigation: Test continuously, not just in Sprint 4
+
+---
+
+## 🔄 Daily Standup Questions
+
+For each sprint day, answer:
+1. What was completed yesterday?
+2. What will be done today?
+3. Are there any blockers?
+4. Is the sprint goal still achievable?
+
+---
+
+## 📊 Velocity Tracking
+
+| Sprint | Planned Points | Actual Points | Completion % |
+|--------|---------------|---------------|--------------|
+| Sprint 1 | 10 | - | - |
+| Sprint 2 | 12 | - | - |
+| Sprint 3 | 15 | - | - |
+| Sprint 4 | 10 | - | - |
+| Sprint 5 | 8 | - | - |
+
+---
+
+**Next Update:** End of Sprint 1 (Jan 11)  
+**Success Metric:** Working `/initproject` command

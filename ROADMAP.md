@@ -1,259 +1,235 @@
 # 🗺️ Prjctzr Development Roadmap
 
 **Last Updated:** January 9, 2025  
-**Current Phase:** Smart Isolation Development  
-**Sprint:** Ready for Sprint 1 of 10
+**Current Phase:** MVP Implementation  
+**Sprint:** 1 of 5 (Reduced from 10)
 
 ---
 
-## 🎯 Vision Statement
+## 🎯 Revised Vision Statement
 
-Build an intelligent project initialization system where every project gets its own isolated, context-aware AI assistant that automatically adapts to the project's specific needs without any manual configuration.
+Build a **working** project initialization system that creates isolated DevAssist instances for each project, with basic project type detection and session management. Focus on making it work first, then making it smart.
 
-## 📊 Project Timeline
+## 📊 Realistic Timeline (5 Sprints Total)
 
 ```mermaid
 gantt
-    title Prjctzr Development Timeline
+    title Prjctzr MVP to Production
     dateFormat  YYYY-MM-DD
-    section Foundation
-    Core System (DONE)      :done, 2024-12-15, 2025-01-04
-    section Smart Isolation
-    Sprint 1-3 Foundation   :active, 2025-01-09, 12d
-    Sprint 4-6 Intelligence :2025-01-21, 12d
-    Sprint 7-8 Optimization :2025-02-02, 8d
-    Sprint 9-10 Polish      :2025-02-10, 8d
+    section Phase 1: Make It Work
+    Sprint 1: Core Implementation  :active, 2025-01-09, 3d
+    Sprint 2: Basic Intelligence   :2025-01-12, 3d
+    section Phase 2: Make It Better
+    Sprint 3: Enhanced Detection    :2025-01-15, 3d
+    Sprint 4: Polish & Testing      :2025-01-18, 3d
+    section Phase 3: Make It Smart
+    Sprint 5: Advanced Features     :2025-01-21, 4d
     section Release
-    Beta Testing           :2025-02-18, 7d
-    Production Release     :milestone, 2025-02-25, 0d
+    Beta Testing                    :2025-01-25, 3d
+    Production Ready                 :milestone, 2025-01-28, 0d
 ```
 
-## 🏁 Completed Milestones
+## 🏁 Reality Check: What Actually Exists
 
-### ✅ Phase 0: Core Initialization System (COMPLETE)
-**Timeline:** December 2024 - January 4, 2025  
-**Sprints:** 5 sprints completed
+### ✅ Working Components
+- Session management (`scripts/session-manager.sh`)
+- DevAssist MCP submodule
+- Basic `.devassist/` structure
+- Documentation and planning
 
-**Delivered:**
-- Basic `/initproject` command
-- DevAssist MCP integration
-- Session management commands
-- Terminal logging system
-- Project isolation foundation
+### ❌ Missing Critical Pieces
+- `/initproject` implementation (`devassist-init` script)
+- Project detection logic
+- Template system
+- Configuration management
+- Any actual initialization code
 
-## 🚧 Current Development: Smart Isolation
+## 🚀 New Sprint Plan (MVP-Focused)
 
-### Phase 1: Foundation (Sprints 1-3)
-**Timeline:** January 9-21, 2025  
-**Status:** Ready to Start
-
-#### Sprint 1: Core Architecture Refactor
-**Duration:** 3-4 days  
-**Goals:**
-- Simplify to 2 commands per project
-- Build ProjectAnalyzer class
-- Create SubagentRegistry
-- Set up testing framework
+### Sprint 1: Core Implementation (Jan 9-11)
+**Goal:** Make `/initproject` actually work
 
 **Deliverables:**
-- [ ] Simplified command structure
-- [ ] Project analysis engine
-- [ ] Subagent loading system
-- [ ] Test suite foundation
+- [ ] Create `bin/devassist-init` script
+- [ ] Fix `.mcp.json` configuration
+- [ ] Implement basic project setup flow
+- [ ] Create simple template system
 
-#### Sprint 2: Dynamic Loading System
-**Duration:** 3-4 days  
-**Goals:**
-- Implement dynamic subagent loading
-- Create subagent interface
-- Build activation triggers
-- Add configuration system
+**Test Criteria:**
+- Can run `/initproject` without errors
+- Creates `.devassist/` directory structure
+- Generates working `.mcp.json` for project
+- Session commands work after init
 
-**Deliverables:**
-- [ ] Dynamic loader implementation
-- [ ] Subagent base class
-- [ ] Trigger detection system
-- [ ] Configuration management
-
-#### Sprint 3: Memory Isolation
-**Duration:** 3-4 days  
-**Goals:**
-- Implement isolated vector databases
-- Create memory management system
-- Build knowledge accumulation
-- Add search capabilities
+### Sprint 2: Basic Intelligence (Jan 12-14)
+**Duration:** 3 days  
+**Goal:** Add simple project detection
 
 **Deliverables:**
-- [ ] Isolated ChromaDB instances
-- [ ] Memory manager class
-- [ ] Knowledge persistence
-- [ ] Semantic search integration
+- [ ] Detect JavaScript/TypeScript projects (package.json)
+- [ ] Detect Python projects (requirements.txt, setup.py)
+- [ ] Detect Go projects (go.mod)
+- [ ] Apply appropriate templates based on type
 
-### Phase 2: Intelligence (Sprints 4-6)
-**Timeline:** January 21 - February 2, 2025  
-**Status:** Planning
+**Test Criteria:**
+- Correctly identifies 3 main project types
+- Falls back gracefully for unknown types
+- Templates match project needs
+- No manual configuration needed
 
-#### Sprint 4: Web Development Subagent
-**Duration:** 3-4 days  
-**Focus:** React, Vue, Angular detection and assistance
+### Sprint 3: Enhanced Detection (Jan 15-17)
+**Duration:** 3 days  
+**Goal:** Improve detection and add frameworks
 
-#### Sprint 5: Backend & API Subagents
-**Duration:** 3-4 days  
-**Focus:** REST, GraphQL, database assistance
+**Deliverables:**
+- [ ] Detect React, Vue, Angular frameworks
+- [ ] Detect Django, Flask, FastAPI
+- [ ] Detect common tools (Docker, K8s)
+- [ ] Load relevant context for each type
 
-#### Sprint 6: Specialized Subagents
-**Duration:** 3-4 days  
-**Focus:** Blockchain, DevOps, Testing subagents
+**Test Criteria:**
+- Framework detection accuracy > 90%
+- Appropriate DevAssist context loaded
+- Session includes framework-specific help
+- Performance < 2 seconds
 
-### Phase 3: Optimization (Sprints 7-8)
-**Timeline:** February 2-10, 2025  
-**Status:** Planning
+### Sprint 4: Polish & Testing (Jan 18-20)
+**Duration:** 3 days  
+**Goal:** Make it production-ready
 
-#### Sprint 7: Performance Optimization
-**Duration:** 3-4 days  
-**Focus:**
-- Load time optimization
-- Memory efficiency
-- Token usage reduction
-- Cache implementation
+**Deliverables:**
+- [ ] Comprehensive error handling
+- [ ] Integration tests for all flows
+- [ ] Performance optimization
+- [ ] User documentation
 
-#### Sprint 8: Error Handling & Edge Cases
-**Duration:** 3-4 days  
-**Focus:**
-- Robust error handling
-- Edge case coverage
-- Recovery mechanisms
-- Fallback strategies
+**Test Criteria:**
+- All edge cases handled gracefully
+- Test coverage > 80%
+- Clear error messages
+- Complete usage documentation
 
-### Phase 4: Polish (Sprints 9-10)
-**Timeline:** February 10-18, 2025  
-**Status:** Planning
+### Sprint 5: Advanced Features (Jan 21-24)
+**Duration:** 4 days  
+**Goal:** Add smart features (if basics work perfectly)
 
-#### Sprint 9: Testing & Quality
-**Duration:** 3-4 days  
-**Focus:**
-- Comprehensive testing
-- Bug fixes
-- Performance validation
-- Security audit
+**Deliverables:**
+- [ ] Simple subagent system (if time permits)
+- [ ] Project history tracking
+- [ ] Session continuity improvements
+- [ ] Basic learning from usage
 
-#### Sprint 10: Documentation & Release
-**Duration:** 3-4 days  
-**Focus:**
-- User documentation
-- API documentation
-- Release preparation
-- Migration guides
+**Test Criteria:**
+- Only implement if Sprints 1-4 complete
+- Each feature fully tested
+- No regression in basic functionality
+- User value demonstrated
 
-## 🎯 Success Criteria
+## 🎯 MVP Success Criteria
 
-### Technical Metrics
-- ⏱️ Session start < 2 seconds
-- 🎯 90%+ correct subagent activation
-- 💾 30-40% token usage reduction
-- 🧪 95%+ test coverage
-- 🔒 Zero cross-project contamination
+### Must Have (Sprint 1-2)
+- ✅ `/initproject` command works
+- ✅ Creates isolated DevAssist instance
+- ✅ Basic project type detection
+- ✅ Session management integration
 
-### User Experience Goals
-- Zero configuration for common projects
-- Intuitive 2-command interface
-- Seamless session continuity
-- Project-specific intelligence
-- Progressive enhancement over time
+### Should Have (Sprint 3-4)
+- ✅ Framework detection
+- ✅ Error handling
+- ✅ Performance < 2 seconds
+- ✅ Test coverage > 80%
 
-## 🚀 Release Plan
+### Nice to Have (Sprint 5)
+- ⭕ Subagent system
+- ⭕ Learning capabilities
+- ⭕ Advanced analytics
 
-### Beta Release (February 18, 2025)
-- Limited testing with selected projects
-- Feedback collection
-- Performance monitoring
-- Bug tracking
+## 🧪 Testing Strategy
 
-### Production Release (February 25, 2025)
-- Full feature set
-- Complete documentation
-- Migration tools
-- Support infrastructure
+### Sprint 1 Tests
+```bash
+# Test 1: Basic initialization
+cd ~/test-project && /initproject
+# Expected: .devassist/ created, .mcp.json configured
 
-## 📈 Future Roadmap (v2.0)
+# Test 2: Session commands work
+/session-start-test-project
+# Expected: Context loaded, session started
 
-### Q2 2025 - Collaboration Features
-- Team shared memory
-- Collaborative sessions
-- Knowledge sharing
-- Code review integration
+# Test 3: Multiple projects isolated
+cd ~/project-a && /initproject
+cd ~/project-b && /initproject
+# Expected: Separate DevAssist instances
+```
 
-### Q3 2025 - Cloud Integration
-- Cloud memory sync
-- Distributed sessions
-- Backup and restore
-- Cross-device support
+### Sprint 2 Tests
+```bash
+# Test 1: JavaScript detection
+cd ~/react-app && /initproject
+# Expected: Detects React, loads JS context
 
-### Q4 2025 - Ecosystem Expansion
-- Plugin marketplace
-- Custom subagent SDK
-- Template library
-- Community contributions
+# Test 2: Python detection
+cd ~/django-app && /initproject
+# Expected: Detects Django, loads Python context
 
-## 🔄 Iteration Process
+# Test 3: Unknown project type
+cd ~/rust-project && /initproject
+# Expected: Falls back to generic setup
+```
 
-### Sprint Cadence
-- **Duration:** 3-4 days per sprint
-- **Planning:** Start of each sprint
-- **Review:** End of each sprint
-- **Retrospective:** After each phase
-
-### Quality Gates
-Each sprint must pass:
-1. All tests passing
-2. Documentation updated
-3. Code review completed
-4. Performance benchmarks met
-
-## 📝 Risk Management
-
-### High Priority Risks
-1. **Complex project detection**
-   - Mitigation: Fallback patterns
-   - Contingency: Manual override
-
-2. **Performance degradation**
-   - Mitigation: Profiling and optimization
-   - Contingency: Selective feature loading
-
-3. **Memory isolation failures**
-   - Mitigation: Strict boundaries
-   - Contingency: Process isolation
-
-## 🤝 Stakeholder Communication
-
-### Weekly Updates
-- Sprint progress
-- Blockers and risks
-- Metric tracking
-- Next week planning
-
-### Phase Reviews
-- Deliverable demonstration
-- Metric evaluation
-- Feedback integration
-- Next phase planning
+### Sprint 3-4 Tests
+- Framework-specific detection tests
+- Performance benchmarks
+- Error recovery tests
+- Integration test suite
 
 ## 📊 Progress Tracking
 
-### Current Status
-- **Overall Progress:** 40% complete
-- **Core System:** ✅ 100% complete
-- **Smart Isolation:** 🚧 0% complete (starting)
-- **Documentation:** 📝 60% complete
-- **Testing:** 🧪 30% complete
+### Current Reality
+- **Overall Progress:** 10% actual implementation
+- **Documentation:** ✅ 90% complete
+- **Core Implementation:** ❌ 5% complete
+- **Testing:** ❌ 0% complete
 
-### Next Milestone
-**Sprint 1 Completion** - January 12, 2025
-- ProjectAnalyzer implemented
-- SubagentRegistry created
-- Test framework established
-- 2-command structure ready
+### Sprint 1 Target (Jan 11)
+- `devassist-init` script: Working
+- `/initproject` command: Functional
+- Basic templates: Created
+- Manual test: Passing
+
+### Sprint 2 Target (Jan 14)
+- Project detection: 3 types
+- Auto-configuration: Working
+- Integration tests: Written
+- Documentation: Updated
+
+## 🚨 Critical Path Items
+
+### Immediate Blockers (Fix First)
+1. **Missing `devassist-init` script** - Can't do anything without this
+2. **Wrong `.mcp.json` paths** - Breaks configuration
+3. **No template system** - Nothing to copy during init
+
+### Dependencies
+- Sprint 2 depends on Sprint 1 completion
+- Sprint 3 depends on Sprint 2 detection working
+- Sprint 4 depends on 1-3 being stable
+- Sprint 5 only if 1-4 are complete
+
+## 📝 Definition of Done
+
+### For Each Sprint
+- [ ] Code implemented and working
+- [ ] Tests written and passing
+- [ ] Documentation updated
+- [ ] Session log updated
+- [ ] No known blockers
+
+### For MVP Release (End of Sprint 4)
+- [ ] `/initproject` works for 80% of projects
+- [ ] No manual configuration needed
+- [ ] Session management integrated
+- [ ] User can start working immediately
 
 ---
 

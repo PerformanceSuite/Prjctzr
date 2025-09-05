@@ -1,219 +1,212 @@
-# 🚀 Sprint 1: Core Architecture Refactor
+# 🚀 Sprint 1: Core Implementation - Make It Work!
 
-**Sprint Duration:** 3-4 days  
+**Sprint Duration:** 3 days  
 **Start Date:** January 9, 2025  
-**Status:** Ready to Start  
-**Sprint Goal:** Simplify command structure and build foundation for smart detection
+**End Date:** January 11, 2025  
+**Status:** Active  
+**Sprint Goal:** Make `/initproject` actually work - no more planning, just implementation
 
 ---
 
 ## 📋 Sprint Objectives
 
-1. **Simplify Command Structure**
-   - Reduce to just 2 commands per project
-   - `/session-start-[project]` and `/session-end-[project]`
-   - Remove need for multiple specialized commands
+1. **Create the Missing Init Script**
+   - Build `bin/devassist-init` that actually runs
+   - Make `/initproject` command functional
+   - No fancy features - just make it work
 
-2. **Build Project Analysis Engine**
-   - Create ProjectAnalyzer class
-   - Implement language detection
-   - Identify frameworks and tools
-   - Determine project type
+2. **Fix Configuration Issues**
+   - Correct `.mcp.json` paths
+   - Ensure proper project isolation
+   - Test with actual project
 
-3. **Create Subagent Registry**
-   - Design subagent interface
-   - Build registration system
-   - Implement activation triggers
-   - Create loading mechanism
+3. **Basic Template System**
+   - Simple copy mechanism
+   - Generic project template
+   - DevAssist server setup
 
-4. **Establish Testing Framework**
-   - Set up test structure
-   - Create test utilities
-   - Write initial test cases
-   - Implement CI pipeline
+4. **Manual Testing**
+   - Test initialization flow
+   - Verify session commands work
+   - Document any issues
 
 ## 📝 User Stories
 
-### Story 1: Simplified Commands
+### Story 1: Working Init Command
 **As a** developer  
-**I want** only 2 commands per project  
-**So that** I don't need to remember multiple specialized commands
+**I want** to run `/initproject` and have it work  
+**So that** I can actually use Prjctzr
 
 **Acceptance Criteria:**
-- [ ] Old multi-command structure removed
-- [ ] New 2-command structure implemented
-- [ ] Commands work with any project name
-- [ ] Backward compatibility maintained
+- [ ] `/initproject` runs without errors
+- [ ] Creates `.devassist/` directory
+- [ ] Generates working `.mcp.json`
+- [ ] Can restart Claude Code and use project
 
-### Story 2: Automatic Project Detection
+### Story 2: Basic Project Setup
 **As a** developer  
-**I want** the system to detect my project type  
-**So that** I get relevant assistance without configuration
+**I want** my project to get DevAssist integration  
+**So that** I have isolated AI assistance
 
 **Acceptance Criteria:**
-- [ ] Detects JavaScript/TypeScript projects
-- [ ] Detects Python projects
-- [ ] Detects Go projects
-- [ ] Detects framework usage
-- [ ] Falls back gracefully for unknown types
+- [ ] DevAssist server copied to project
+- [ ] Isolated data directory created
+- [ ] Session commands available
+- [ ] No conflicts with other projects
 
-### Story 3: Dynamic Subagent Loading
+### Story 3: Simple Configuration
 **As a** developer  
-**I want** relevant tools loaded automatically  
-**So that** I get specialized help for my project type
+**I want** zero configuration required  
+**So that** I can start working immediately
 
 **Acceptance Criteria:**
-- [ ] Subagents register themselves
-- [ ] Activation based on project analysis
-- [ ] Multiple subagents can be active
-- [ ] No manual configuration needed
+- [ ] No manual file editing needed
+- [ ] Paths automatically configured
+- [ ] Server starts without issues
+- [ ] Session management works
 
 ## 🛠️ Technical Tasks
 
-### Core Architecture
-- [ ] Create `lib/ProjectAnalyzer.js`
-  - [ ] Implement file system scanning
-  - [ ] Add language detection logic
-  - [ ] Create framework detection
-  - [ ] Build project type classifier
+### Day 1: Create Init Script
+- [ ] Create `$HOME/bin/devassist-init` script
+  - [ ] Parse command arguments
+  - [ ] Check current directory
+  - [ ] Create `.devassist/` structure
+  - [ ] Copy DevAssist server files
 
-- [ ] Create `lib/SubagentRegistry.js`
-  - [ ] Design subagent interface
-  - [ ] Implement registration methods
-  - [ ] Create activation logic
-  - [ ] Build loading system
+- [ ] Fix Configuration
+  - [ ] Generate correct `.mcp.json`
+  - [ ] Set proper project paths
+  - [ ] Configure isolated data directory
+  - [ ] Test configuration loads
 
-- [ ] Update `lib/SessionManager.js`
-  - [ ] Integrate ProjectAnalyzer
-  - [ ] Connect SubagentRegistry
-  - [ ] Simplify command handling
-  - [ ] Add intelligent routing
+### Day 2: Template System
+- [ ] Create Template Structure
+  - [ ] Basic project template
+  - [ ] DevAssist server template
+  - [ ] Session scripts template
+  - [ ] Configuration templates
 
-### Testing Infrastructure
-- [ ] Set up test framework
-  - [ ] Configure Jest/Mocha
-  - [ ] Create test utilities
-  - [ ] Set up coverage reporting
-  - [ ] Add test scripts
+- [ ] Implement Copy Logic
+  - [ ] Copy templates to project
+  - [ ] Replace path variables
+  - [ ] Set permissions correctly
+  - [ ] Create necessary directories
 
-- [ ] Write unit tests
-  - [ ] ProjectAnalyzer tests
-  - [ ] SubagentRegistry tests
-  - [ ] SessionManager tests
-  - [ ] Integration tests
+### Day 3: Testing & Polish
+- [ ] Manual Testing
+  - [ ] Test with new project
+  - [ ] Test with existing project
+  - [ ] Test session commands
+  - [ ] Test isolation between projects
 
-### Documentation
-- [ ] Update architecture documentation
-- [ ] Create subagent development guide
-- [ ] Document new command structure
-- [ ] Add API documentation
+- [ ] Fix Issues
+  - [ ] Debug any errors found
+  - [ ] Improve error messages
+  - [ ] Add basic logging
+  - [ ] Update documentation
 
 ## 📊 Success Metrics
 
 | Metric | Target | Actual |
 |--------|--------|--------|
-| Test Coverage | > 80% | - |
-| Detection Accuracy | > 90% | - |
-| Load Time | < 2s | - |
-| Command Simplification | 2 commands | - |
+| `/initproject` works | Yes | - |
+| Creates .devassist/ | Yes | - |
+| Generates .mcp.json | Yes | - |
+| Session commands work | Yes | - |
 
-## 🔄 Daily Standup Template
+## 🧪 Test Plan
 
-### Day 1
-**Planned:**
-- Set up project structure
-- Create ProjectAnalyzer skeleton
-- Design subagent interface
+### Test 1: Basic Initialization
+```bash
+mkdir ~/test-sprint1
+cd ~/test-sprint1
+/initproject
+# Expected: Success message, .devassist/ created
+```
 
-**Completed:**
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+### Test 2: Configuration Check
+```bash
+cat .mcp.json
+# Expected: Correct paths to project
+ls .devassist/
+# Expected: server.js, data/, scripts/
+```
 
-**Blockers:**
-- None
+### Test 3: Session Commands
+```bash
+# Restart Claude Code
+claude
+/session-start-test-sprint1
+# Expected: Session starts, context loaded
+```
 
-### Day 2
-**Planned:**
-- Implement language detection
-- Build framework detection
-- Create SubagentRegistry
+### Test 4: Isolation Test
+```bash
+cd ~/another-project
+/initproject
+# Expected: Separate DevAssist instance
+# Both projects should work independently
+```
 
-**Completed:**
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+## 🔄 Daily Progress
 
-**Blockers:**
-- TBD
+### Day 1 (Jan 9)
+**Goal:** Get init script working
+- [ ] Create devassist-init script
+- [ ] Test basic execution
+- [ ] Fix configuration issues
 
-### Day 3
-**Planned:**
-- Integrate components
-- Write tests
-- Update documentation
+### Day 2 (Jan 10)
+**Goal:** Template system
+- [ ] Set up templates
+- [ ] Copy mechanism working
+- [ ] Path substitution working
 
-**Completed:**
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
-
-**Blockers:**
-- TBD
-
-### Day 4 (if needed)
-**Planned:**
-- Bug fixes
-- Performance optimization
-- Sprint review prep
-
-**Completed:**
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
-
-**Blockers:**
-- TBD
+### Day 3 (Jan 11)
+**Goal:** Testing and polish
+- [ ] All tests passing
+- [ ] Documentation updated
+- [ ] Ready for Sprint 2
 
 ## 🎯 Definition of Done
 
-A task is considered DONE when:
-- [ ] Code is written and works
-- [ ] Tests are written and passing
-- [ ] Documentation is updated
-- [ ] Code review completed
-- [ ] Performance benchmarks met
-- [ ] No known bugs
+Sprint 1 is DONE when:
+- [x] `/initproject` command executes without errors
+- [x] Creates complete `.devassist/` directory structure
+- [x] Generates working `.mcp.json` configuration
+- [x] All 4 tests pass successfully
+- [x] Basic documentation updated
 
-## 🚨 Risks and Mitigations
+## 🚨 Known Issues & Blockers
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Complex project types | High | Start with common types, add more gradually |
-| Performance issues | Medium | Profile early, optimize as needed |
-| Breaking changes | High | Maintain backward compatibility layer |
+| Issue | Status | Resolution |
+|-------|--------|------------|
+| Missing devassist-init script | BLOCKER | Create in Day 1 |
+| Wrong .mcp.json paths | BLOCKER | Fix in Day 1 |
+| No template system | BLOCKER | Build in Day 2 |
 
-## 📝 Sprint Retrospective
+## 📝 Sprint Notes
 
-**To be completed at sprint end**
+### Current Status (Start of Sprint)
+- `/initproject` command exists but doesn't work
+- Documentation complete but no implementation
+- Need to build from scratch
 
-### What Went Well
-- TBD
+### Expected Outcome (End of Sprint)
+- Working `/initproject` command
+- Basic project initialization functional
+- Ready to add intelligence in Sprint 2
 
-### What Could Be Improved
-- TBD
+## 📚 Resources Needed
 
-### Action Items for Next Sprint
-- TBD
-
-## 📚 Resources
-
-- [Project Analysis Best Practices](../guides/project-analysis.md)
-- [Subagent Development Guide](../guides/subagent-development.md)
-- [Testing Strategy](../../devassist-isolation/TESTING_STRATEGY.md)
-- [Architecture Overview](../../devassist-isolation/SMART_ISOLATION_ROADMAP.md)
+- DevAssist MCP server code (exists in submodule)
+- Bash scripting for init script
+- Template files for project setup
+- Test projects for validation
 
 ---
 
-**Sprint Status:** Ready to Start  
-**Next Update:** End of Day 1
+**Sprint Status:** Active  
+**Current Day:** Day 1  
+**Next Checkpoint:** End of Day 1 (Jan 9)
