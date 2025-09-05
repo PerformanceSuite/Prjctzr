@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "devassist-PROJECT_NAME": {
+      "command": "node",
+      "args": ["PROJECT_PATH/.devassist/server.js"],
+      "env": {
+        "PROJECT_ROOT": "PROJECT_PATH",
+        "PROJECT_NAME": "PROJECT_NAME",
+        "DEVASSIST_DATA_PATH": "PROJECT_PATH/.devassist/data"
+      }
+    }
+  }
+}

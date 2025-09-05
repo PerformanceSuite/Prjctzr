@@ -1,12 +1,15 @@
 {
   "mcpServers": {
-    "devassist-project-setup": {
-      "type": "stdio",
+    "devassist-prjctzr": {
       "command": "node",
       "args": [
-        "/Users/danielconnolly/Projects/PROJECT_SETUP/.devassist/project_setup-server.js"
+        "/Users/danielconnolly/Projects/Prjctzr/.devassist/server.js"
       ],
-      "env": {}
+      "env": {
+        "PROJECT_ROOT": "/Users/danielconnolly/Projects/Prjctzr",
+        "PROJECT_NAME": "Prjctzr",
+        "DEVASSIST_DATA_PATH": "/Users/danielconnolly/Projects/Prjctzr/.devassist/data"
+      }
     }
   }
 }
