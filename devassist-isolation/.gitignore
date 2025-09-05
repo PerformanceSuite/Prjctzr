@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Project-specific
+.devassist/data/
+.devassist/terminal_logs/
+*.db
+*.sqlite
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Archive (keeping for reference but not tracking changes)
+archive-old-approach/template/node_modules/
+archive-old-approach/template-v2/node_modules/

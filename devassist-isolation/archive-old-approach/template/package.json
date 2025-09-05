@@ -1,0 +1,14 @@
+{
+  "name": "devassist-project-isolation-template",
+  "version": "1.0.0",
+  "description": "Template for project-isolated DevAssist MCP servers",
+  "main": "server.js",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node server.js --test"
+  }
+}
