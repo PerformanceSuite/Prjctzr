@@ -1,0 +1,471 @@
+#!/bin/bash
+
+# Prjctzr DevAssist Initialization Script V3
+# Creates isolated DevAssist instance with project type detection
+# Enhanced with comprehensive error handling and validation
+
+set -euo pipefail
+trap 'error_handler $? $LINENO' ERR
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Error handler
+error_handler() {
+    local exit_code=$1
+    local line_number=$2
+    echo -e "${RED}[✗]${NC} Error occurred on line $line_number with exit code $exit_code"
+    echo -e "${RED}[✗]${NC} Initialization failed. Please check the error above."
+    
+    # Cleanup partial installation if needed
+    if [ -d "$DEVASSIST_DIR" ] && [ -z "$(ls -A "$DEVASSIST_DIR")" ]; then
+        rm -rf "$DEVASSIST_DIR"
+        echo -e "${YELLOW}[!]${NC} Cleaned up partial installation"
+    fi
+    
+    exit $exit_code
+}
+
+# Configuration
+PRJCTZR_HOME="${PRJCTZR_HOME:-$HOME/Projects/Prjctzr}"
+DEVASSIST_MCP_PATH="$PRJCTZR_HOME/devassist-mcp"
+TEMPLATES_PATH="$PRJCTZR_HOME/templates"
+PROJECT_DIR="$(pwd)"
+PROJECT_NAME="$(basename "$PROJECT_DIR")"
+DEVASSIST_DIR="$PROJECT_DIR/.devassist"
+
+# Function to print colored output
+print_status() {
+    echo -e "${BLUE}[*]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[✓]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[✗]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[!]${NC} $1"
+}
+
+# Validation checks
+validate_environment() {
+    # Check if we're in a valid directory
+    if [ ! -d "$PROJECT_DIR" ]; then
+        print_error "Current directory does not exist or is not accessible"
+        exit 1
+    fi
+    
+    # Check write permissions
+    if [ ! -w "$PROJECT_DIR" ]; then
+        print_error "No write permission in current directory"
+        exit 1
+    fi
+    
+    # Check if node is installed (required for DevAssist MCP)
+    if ! command -v node &> /dev/null; then
+        print_error "Node.js is not installed. Please install Node.js first."
+        print_status "Visit: https://nodejs.org/"
+        exit 1
+    fi
+    
+    # Check available disk space (need at least 10MB)
+    if command -v df &> /dev/null; then
+        local available_space=$(df "$PROJECT_DIR" | awk 'NR==2 {print $4}')
+        if [ "$available_space" -lt 10240 ]; then
+            print_warning "Low disk space detected (< 10MB available)"
+        fi
+    fi
+}
+
+# Header
+echo ""
+echo "======================================"
+echo "  Prjctzr DevAssist Initialization V3"
+echo "======================================"
+echo ""
+
+print_status "Project: $PROJECT_NAME"
+print_status "Location: $PROJECT_DIR"
+echo ""
+
+# Run validation
+validate_environment
+
+# Detect project type and framework
+PROJECT_TYPE="generic"
+PROJECT_FRAMEWORK=""
+
+# JavaScript/TypeScript detection with frameworks
+if [ -f "$PROJECT_DIR/package.json" ]; then
+    # Validate package.json is valid JSON
+    if ! python3 -m json.tool "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
+        print_warning "package.json appears to be malformed, using generic JavaScript detection"
+        PROJECT_TYPE="javascript"
+    else
+        PROJECT_TYPE="javascript"
+        
+        # Detect JavaScript frameworks
+        if grep -q '"react"' "$PROJECT_DIR/package.json" 2>/dev/null || grep -q '"react-dom"' "$PROJECT_DIR/package.json" 2>/dev/null; then
+            PROJECT_FRAMEWORK="React"
+            print_success "Detected: JavaScript/TypeScript project with React"
+        elif grep -q '"vue"' "$PROJECT_DIR/package.json" 2>/dev/null || grep -q '"nuxt"' "$PROJECT_DIR/package.json" 2>/dev/null; then
+            PROJECT_FRAMEWORK="Vue"
+            print_success "Detected: JavaScript/TypeScript project with Vue"
+        elif grep -q '"@angular/core"' "$PROJECT_DIR/package.json" 2>/dev/null; then
+            PROJECT_FRAMEWORK="Angular"
+            print_success "Detected: JavaScript/TypeScript project with Angular"
+        elif grep -q '"express"' "$PROJECT_DIR/package.json" 2>/dev/null; then
+            PROJECT_FRAMEWORK="Express"
+            print_success "Detected: Node.js project with Express"
+        elif grep -q '"next"' "$PROJECT_DIR/package.json" 2>/dev/null; then
+            PROJECT_FRAMEWORK="Next.js"
+            print_success "Detected: JavaScript/TypeScript project with Next.js"
+        elif grep -q '"svelte"' "$PROJECT_DIR/package.json" 2>/dev/null; then
+            PROJECT_FRAMEWORK="Svelte"
+            print_success "Detected: JavaScript/TypeScript project with Svelte"
+        else
+            print_success "Detected: JavaScript/TypeScript project"
+        fi
+    fi
+    
+# Python detection with frameworks
+elif [ -f "$PROJECT_DIR/requirements.txt" ] || [ -f "$PROJECT_DIR/setup.py" ] || [ -f "$PROJECT_DIR/pyproject.toml" ]; then
+    PROJECT_TYPE="python"
+    
+    # Detect Python frameworks
+    if [ -f "$PROJECT_DIR/manage.py" ] || ([ -f "$PROJECT_DIR/requirements.txt" ] && grep -qi "django" "$PROJECT_DIR/requirements.txt" 2>/dev/null); then
+        PROJECT_FRAMEWORK="Django"
+        print_success "Detected: Python project with Django"
+    elif [ -f "$PROJECT_DIR/app.py" ] || [ -f "$PROJECT_DIR/application.py" ] || ([ -f "$PROJECT_DIR/requirements.txt" ] && grep -qi "flask" "$PROJECT_DIR/requirements.txt" 2>/dev/null); then
+        PROJECT_FRAMEWORK="Flask"
+        print_success "Detected: Python project with Flask"
+    elif [ -f "$PROJECT_DIR/main.py" ] && ([ -f "$PROJECT_DIR/requirements.txt" ] && grep -qi "fastapi" "$PROJECT_DIR/requirements.txt" 2>/dev/null); then
+        PROJECT_FRAMEWORK="FastAPI"
+        print_success "Detected: Python project with FastAPI"
+    elif [ -f "$PROJECT_DIR/requirements.txt" ] && grep -qi "streamlit" "$PROJECT_DIR/requirements.txt" 2>/dev/null; then
+        PROJECT_FRAMEWORK="Streamlit"
+        print_success "Detected: Python project with Streamlit"
+    else
+        print_success "Detected: Python project"
+    fi
+    
+# Go detection with frameworks
+elif [ -f "$PROJECT_DIR/go.mod" ]; then
+    PROJECT_TYPE="go"
+    
+    # Detect Go frameworks
+    if grep -q "github.com/gin-gonic/gin" "$PROJECT_DIR/go.mod" 2>/dev/null; then
+        PROJECT_FRAMEWORK="Gin"
+        print_success "Detected: Go project with Gin framework"
+    elif grep -q "github.com/labstack/echo" "$PROJECT_DIR/go.mod" 2>/dev/null; then
+        PROJECT_FRAMEWORK="Echo"
+        print_success "Detected: Go project with Echo framework"
+    elif grep -q "github.com/gofiber/fiber" "$PROJECT_DIR/go.mod" 2>/dev/null; then
+        PROJECT_FRAMEWORK="Fiber"
+        print_success "Detected: Go project with Fiber framework"
+    elif grep -q "github.com/gorilla/mux" "$PROJECT_DIR/go.mod" 2>/dev/null; then
+        PROJECT_FRAMEWORK="Gorilla/Mux"
+        print_success "Detected: Go project with Gorilla/Mux"
+    else
+        print_success "Detected: Go project"
+    fi
+    
+elif [ -f "$PROJECT_DIR/Cargo.toml" ]; then
+    PROJECT_TYPE="rust"
+    print_status "Detected: Rust project (using generic template)"
+else
+    print_status "No specific language detected (using generic template)"
+fi
+
+# Git worktree detection
+if [ -d ".git" ] || [ -f ".git" ]; then
+    WORKTREES=$(git worktree list 2>/dev/null | wc -l)
+    if [ "$WORKTREES" -gt 1 ]; then
+        print_success "Detected: Git worktrees ($WORKTREES active)"
+    fi
+fi
+
+# Docker/Kubernetes detection
+if [ -f "$PROJECT_DIR/Dockerfile" ] || [ -f "$PROJECT_DIR/docker-compose.yml" ] || [ -f "$PROJECT_DIR/docker-compose.yaml" ]; then
+    print_status "Detected: Docker configuration"
+fi
+if [ -f "$PROJECT_DIR/kubernetes.yaml" ] || [ -f "$PROJECT_DIR/k8s.yaml" ] || [ -d "$PROJECT_DIR/k8s" ] || [ -d "$PROJECT_DIR/.helm" ]; then
+    print_status "Detected: Kubernetes configuration"
+fi
+echo ""
+
+# Check if already initialized
+if [ -d "$DEVASSIST_DIR" ]; then
+    print_warning "DevAssist already initialized"
+    print_status "Remove .devassist/ directory to reinitialize"
+    exit 0
+fi
+
+# Check DevAssist MCP exists
+if [ ! -d "$DEVASSIST_MCP_PATH" ]; then
+    print_warning "DevAssist MCP not found at: $DEVASSIST_MCP_PATH"
+    print_status "Using basic configuration"
+    print_status "To get full functionality, ensure Prjctzr is installed at: $PRJCTZR_HOME"
+fi
+
+# Handle special characters in project name
+PROJECT_NAME_SAFE=$(echo "$PROJECT_NAME" | sed 's/[^a-zA-Z0-9-]/_/g')
+if [ "$PROJECT_NAME" != "$PROJECT_NAME_SAFE" ]; then
+    print_warning "Project name contains special characters, using: $PROJECT_NAME_SAFE"
+    PROJECT_NAME="$PROJECT_NAME_SAFE"
+fi
+
+# Check for extremely long project names
+if [ ${#PROJECT_NAME} -gt 50 ]; then
+    PROJECT_NAME="${PROJECT_NAME:0:50}"
+    print_warning "Project name too long, truncated to: $PROJECT_NAME"
+fi
+
+# Create directory structure
+print_status "Creating DevAssist directory structure..."
+mkdir -p "$DEVASSIST_DIR"/{data,scripts,terminal_logs,config}
+mkdir -p "$PROJECT_DIR/.sessions"
+
+# Create server wrapper
+print_status "Setting up DevAssist MCP server..."
+cat > "$DEVASSIST_DIR/server.js" <<'EOF'
+#!/usr/bin/env node
+// DevAssist MCP Server Wrapper
+const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+
+const config = {
+  project: process.env.PROJECT_NAME,
+  projectPath: process.env.PROJECT_ROOT,
+  dataPath: process.env.DEVASSIST_DATA_PATH
+};
+
+// Try to find DevAssist MCP
+const possiblePaths = [
+  path.join(process.env.HOME, 'Projects/Prjctzr/devassist-mcp/index.js'),
+  '/Users/danielconnolly/Projects/Custom_MCP/DevAssist_MCP/index.js'
+];
+
+let devassistPath = null;
+for (const p of possiblePaths) {
+  if (fs.existsSync(p)) {
+    devassistPath = p;
+    break;
+  }
+}
+
+if (devassistPath) {
+  const devassist = spawn('node', [devassistPath], {
+    env: process.env,
+    stdio: 'inherit'
+  });
+  
+  devassist.on('exit', (code) => process.exit(code || 0));
+} else {
+  console.error('DevAssist MCP not found');
+  process.exit(1);
+}
+EOF
+
+chmod +x "$DEVASSIST_DIR/server.js"
+
+# Create MCP configuration
+print_status "Generating .mcp.json configuration..."
+cat > "$PROJECT_DIR/.mcp.json" <<EOF
+{
+  "mcpServers": {
+    "devassist-$PROJECT_NAME": {
+      "command": "node",
+      "args": ["$DEVASSIST_DIR/server.js"],
+      "env": {
+        "PROJECT_ROOT": "$PROJECT_DIR",
+        "PROJECT_NAME": "$PROJECT_NAME",
+        "DEVASSIST_DATA_PATH": "$DEVASSIST_DIR/data"
+      }
+    }
+  }
+}
+EOF
+
+# Create session script
+print_status "Creating session management scripts..."
+cat > "$DEVASSIST_DIR/scripts/session.sh" <<'EOF'
+#!/bin/bash
+case "$1" in
+    start) echo "Starting session..." ;;
+    end) echo "Ending session..." ;;
+    *) echo "Usage: $0 {start|end}" ;;
+esac
+EOF
+chmod +x "$DEVASSIST_DIR/scripts/session.sh"
+
+# Select and create CLAUDE.md
+print_status "Creating project documentation..."
+TEMPLATE_FILE="$TEMPLATES_PATH/base/CLAUDE.md"
+
+if [ "$PROJECT_TYPE" = "javascript" ] && [ -f "$TEMPLATES_PATH/javascript/CLAUDE.md" ]; then
+    TEMPLATE_FILE="$TEMPLATES_PATH/javascript/CLAUDE.md"
+    print_status "Using JavaScript template"
+elif [ "$PROJECT_TYPE" = "python" ] && [ -f "$TEMPLATES_PATH/python/CLAUDE.md" ]; then
+    TEMPLATE_FILE="$TEMPLATES_PATH/python/CLAUDE.md"
+    print_status "Using Python template"
+elif [ "$PROJECT_TYPE" = "go" ] && [ -f "$TEMPLATES_PATH/go/CLAUDE.md" ]; then
+    TEMPLATE_FILE="$TEMPLATES_PATH/go/CLAUDE.md"
+    print_status "Using Go template"
+else
+    print_status "Using generic template"
+fi
+
+if [ -f "$TEMPLATE_FILE" ]; then
+    sed -e "s/PROJECT_NAME/$PROJECT_NAME/g" \
+        -e "s|PROJECT_PATH|$PROJECT_DIR|g" \
+        -e "s/PROJECT_DATE/$(date +%Y-%m-%d)/g" \
+        -e "s/PROJECT_FRAMEWORK/$PROJECT_FRAMEWORK/g" \
+        "$TEMPLATE_FILE" > "$PROJECT_DIR/CLAUDE.md"
+    
+    # Append framework-specific information if detected
+    if [ -n "$PROJECT_FRAMEWORK" ]; then
+        echo "" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "## Detected Framework: $PROJECT_FRAMEWORK" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "" >> "$PROJECT_DIR/CLAUDE.md"
+        
+        # Add framework-specific commands
+        case "$PROJECT_FRAMEWORK" in
+            "React")
+                echo "### React Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm start          # Start development server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run build      # Build for production" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm test           # Run tests" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "Vue")
+                echo "### Vue Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run serve      # Start development server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run build      # Build for production" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run lint       # Lint and fix files" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "Angular")
+                echo "### Angular Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "ng serve           # Start development server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "ng build           # Build for production" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "ng test            # Run unit tests" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "ng generate        # Generate components/services" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "Next.js")
+                echo "### Next.js Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run dev        # Start development server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run build      # Build for production" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run start      # Start production server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "Express")
+                echo "### Express Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm start          # Start server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm run dev        # Start with nodemon (if configured)" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "npm test           # Run tests" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "Django")
+                echo "### Django Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "python manage.py runserver       # Start development server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "python manage.py makemigrations  # Create migrations" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "python manage.py migrate         # Apply migrations" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "python manage.py test            # Run tests" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "python manage.py createsuperuser # Create admin user" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "Flask")
+                echo "### Flask Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "flask run          # Start development server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "python app.py      # Alternative start method" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "flask db migrate   # Create migrations (if using Flask-Migrate)" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "flask db upgrade   # Apply migrations" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "FastAPI")
+                echo "### FastAPI Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "uvicorn main:app --reload  # Start with auto-reload" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "uvicorn main:app           # Start production server" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "pytest                      # Run tests" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+            "Gin"|"Echo"|"Fiber")
+                echo "### $PROJECT_FRAMEWORK Commands" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "go run .           # Run the application" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "go build           # Build binary" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "go test ./...      # Run all tests" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "go mod tidy        # Clean up dependencies" >> "$PROJECT_DIR/CLAUDE.md"
+                echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+                ;;
+        esac
+    fi
+    
+    # Add git worktree information if detected
+    if [ "$WORKTREES" -gt 1 ]; then
+        echo "" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "## Git Worktrees" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "This project uses Git worktrees. Active worktrees:" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+        git worktree list >> "$PROJECT_DIR/CLAUDE.md"
+        echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "### Worktree Commands" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "\`\`\`bash" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "git worktree list                  # List all worktrees" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "git worktree add <path> <branch>   # Create new worktree" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "git worktree remove <path>         # Remove worktree" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "git worktree prune                 # Clean up stale worktree info" >> "$PROJECT_DIR/CLAUDE.md"
+        echo "\`\`\`" >> "$PROJECT_DIR/CLAUDE.md"
+    fi
+else
+    cat > "$PROJECT_DIR/CLAUDE.md" <<EOF
+# $PROJECT_NAME
+
+Project initialized with DevAssist on $(date +%Y-%m-%d)
+Type: $PROJECT_TYPE
+Framework: ${PROJECT_FRAMEWORK:-None detected}
+EOF
+fi
+
+# Update .gitignore
+if ! grep -q "^\.devassist" "$PROJECT_DIR/.gitignore" 2>/dev/null; then
+    echo -e "\n# DevAssist\n.devassist/\n.sessions/\n.mcp.json" >> "$PROJECT_DIR/.gitignore"
+fi
+
+# Success
+echo ""
+print_success "DevAssist initialization complete!"
+echo ""
+echo "Project type: $PROJECT_TYPE"
+if [ -n "$PROJECT_FRAMEWORK" ]; then
+    echo "Framework: $PROJECT_FRAMEWORK"
+fi
+if [ "$WORKTREES" -gt 1 ]; then
+    echo "Git worktrees: $WORKTREES active"
+fi
+echo ""
+echo "Next steps:"
+echo "1. Restart Claude Code"
+echo "2. Use /session-start to begin"
+echo ""
