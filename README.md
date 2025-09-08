@@ -1,256 +1,397 @@
-# Prjctzr MCP Server 2.0
+# Prjctzr MCP Server v2.0.0 🏗️
 
-## Intelligent Project Initialization with Built-in Masking & Containerization
+Professional project initialization and enhancement server that creates production-ready codebases with best practices, containerization, and DevAssist integration through the Model Context Protocol (MCP).
 
-Prjctzr is a powerful MCP server that provides comprehensive project initialization with all modern best practices, containerization support, and an intelligent masking layer for optimized Claude integration.
+## 🌟 Overview
 
-## 🚀 Features
+Prjctzr eliminates the tedious setup phase of new projects by instantly creating well-structured, production-ready codebases complete with testing, CI/CD, documentation, and optional AI assistance integration.
 
-### Core Capabilities
-- **One-command project setup** with all best practices
-- **Intelligent project type detection** (Node, Python, Go, Rust, Fullstack)
-- **Built-in tool masking** for optimized LLM interaction
-- **Docker & Docker Compose** generation
-- **Dagger CI/CD pipelines** creation
-- **Template management** system with language-specific templates
-- **Progressive enhancement** - add features to existing projects
-- **Includes templates from Prjctzr v1** for backward compatibility
+### Key Benefits
+- **Instant Best Practices**: Every project starts production-ready
+- **Multi-Language Support**: Node.js, Python, Go, Rust, and more
+- **DevAssist Integration**: Seamless AI assistance setup
+- **Beautiful CLI**: Interactive terminal experience
+- **Smart Enhancement**: Add features to existing projects
 
-### What Gets Created
+## 🚀 Quick Start
 
-#### Project Structure
-- ✅ Git repository with proper .gitignore
-- ✅ Standard directory structure (src, tests, docs, etc.)
-- ✅ README with project template
-- ✅ LICENSE file
-- ✅ Package manager configuration (package.json, pyproject.toml, go.mod, Cargo.toml)
-
-#### Development Environment
-- ✅ .devcontainer/devcontainer.json for VS Code
-- ✅ Docker & docker-compose.yml
-- ✅ .env.example with required variables
-- ✅ Makefile with common commands
-- ✅ Pre-commit hooks
-
-#### CI/CD Pipeline
-- ✅ GitHub Actions workflows
-- ✅ GitLab CI configuration
-- ✅ Dagger pipelines
-- ✅ Multi-stage Dockerfiles
-- ✅ Security scanning (Dependabot, CodeQL)
-
-#### Documentation
-- ✅ docs/ folder with MkDocs/Sphinx
-- ✅ CONTRIBUTING.md
-- ✅ CHANGELOG.md
-- ✅ Architecture Decision Records (ADR)
-- ✅ API documentation templates
-
-#### Testing Infrastructure
-- ✅ Test framework setup (Jest, Pytest, Go test, Cargo test)
-- ✅ Example unit and integration tests
-- ✅ Coverage reporting
-- ✅ E2E testing structure
-
-#### Code Quality
-- ✅ Linters (ESLint, Black, Ruff, golangci-lint)
-- ✅ Formatters (Prettier, Black, gofmt, rustfmt)
-- ✅ EditorConfig
-- ✅ Husky git hooks
-
-## 📦 Installation
-
-### As MCP Server (Claude Code)
-
-Already configured in your Claude Code setup at:
-```
-/Users/danielconnolly/.config/claude/mcp_servers.json
-```
-
-### Docker Installation
+### Installation
 
 ```bash
-cd /Users/danielconnolly/Projects/Custom_MCP/Prjctzr_MCP
+# Clone and install
+git clone https://github.com/PerformanceSuite/Prjctzr.git
+cd Prjctzr
+npm install
 
-# Build the image
-docker build -t prjctzr-mcp .
+# Make CLI available globally
+npm link
 
-# Run with docker-compose
-docker-compose up -d
-
-# Or run standalone
-docker run -it --rm \
-  -v $(pwd):/workspace \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  prjctzr-mcp
+# Start the server
+npm start
 ```
 
-## 🎯 Usage
+### Claude Desktop Configuration
 
-### Available Commands
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
-#### `prjctzr:init`
-Create a new project with all best practices:
-```
-prjctzr:init
-  name: "my-awesome-app"
-  type: "node"  # or python, go, rust, fullstack, auto
-  features: ["docker", "ci", "monitoring"]
-```
-
-#### `prjctzr:enhance`
-Add features to existing project:
-```
-prjctzr:enhance
-  feature: "testing"  # or ci, monitoring, security, docs
-  path: "./my-project"
-```
-
-#### `prjctzr:dockerize`
-Add Docker support to existing project:
-```
-prjctzr:dockerize
-  path: "./my-project"
-  options: {
-    multistage: true,
-    alpine: true,
-    compose: true
+```json
+{
+  "mcpServers": {
+    "prjctzr": {
+      "command": "node",
+      "args": ["/path/to/Prjctzr/index.js"]
+    }
   }
+}
 ```
 
-#### `prjctzr:analyze`
-Analyze project and get recommendations:
-```
-prjctzr:analyze
-  path: "./my-project"
-  detailed: true
+### CLI Usage
+
+```bash
+# Interactive project creation
+prjctzr
+
+# Or use in Claude Code
+/prjctzr
 ```
 
-#### `prjctzr:template`
-Manage project templates:
+## 📦 Features
+
+### Project Types
+
+| Type | Description | Frameworks |
+|------|-------------|------------|
+| **Node.js** | Backend applications | Express, Fastify, NestJS |
+| **Python** | Web services & APIs | FastAPI, Django, Flask |
+| **Go** | Microservices | Gin, Echo, Fiber |
+| **Rust** | System applications | Actix, Rocket, Warp |
+| **React** | Frontend SPAs | Create React App, Next.js |
+| **Vue** | Progressive web apps | Vue 3, Nuxt |
+| **Full-stack** | Complete applications | React + Node/Python |
+
+### Feature Selection
+
+Interactive menu for choosing enhancements:
+
 ```
-prjctzr:template
-  action: "list"  # or add, remove, update
+📦 Available Enhancements
+────────────────────────────────────────
+  [✓] 1. DevAssist Integration - AI-powered development
+  [✓] 2. Docker - Container support with best practices
+  [✓] 3. CI/CD - Automated testing and deployment
+  [✓] 4. Testing - Jest/Pytest with coverage
+  [ ] 5. Dagger - Portable CI/CD pipelines
+  [✓] 6. Documentation - Auto-generated docs
+  [ ] 7. Kubernetes - Production deployment
+  [ ] 8. Monitoring - Logging and metrics
 ```
+
+### DevAssist Setup
+
+When DevAssist is selected, Prjctzr automatically:
+
+1. Creates `.devassist/` directory structure
+2. Configures session management
+3. Sets up specialized subagents
+4. Initializes databases
+5. Creates warmup templates
+6. Configures cleanup rules
+
+### Docker Integration
+
+Professional containerization with:
+
+- Optimized multi-stage Dockerfiles
+- Docker Compose for development
+- Health checks and restart policies
+- Volume management
+- Network configuration
+
+### CI/CD Pipelines
+
+Automated workflows for:
+
+- **GitHub Actions**: Test, build, deploy
+- **GitLab CI**: Pipeline with stages
+- **Dagger**: Portable CI/CD as code
+- **Jenkins**: Declarative pipelines
 
 ## 🏗️ Architecture
 
-### Tool Masking
-Prjctzr implements a masking layer that:
-- **Hides complexity** from Claude (system parameters, paths, etc.)
-- **Simplifies interfaces** (only essential parameters exposed)
-- **Injects system values** automatically
-- **Filters outputs** to reduce token usage
-
-### Containerization Strategy
-- **Docker**: Multi-stage builds with Alpine Linux
-- **Docker Compose**: Full development environment
-- **Dagger**: Advanced CI/CD pipelines
-- **Kubernetes**: Optional Helm charts and manifests
+### Directory Structure
+```
+Prjctzr/
+├── index.js                   # Main MCP server
+├── bin/
+│   └── prjctzr               # CLI executable
+├── src/
+│   ├── initializer/          # Project creation
+│   │   └── initializer.js   # Core logic
+│   ├── analyzer/             # Codebase analysis
+│   │   └── analyzer.js      # Detection logic
+│   ├── containers/           # Docker management
+│   │   └── manager.js       # Container configs
+│   ├── templates/            # Template system
+│   │   └── manager.js       # Template engine
+│   └── devassist-setup.js   # DevAssist integration
+├── templates/                # Project templates
+│   ├── node/
+│   ├── python/
+│   ├── go/
+│   └── rust/
+└── scripts/                  # Utility scripts
+```
 
 ### Template System
-- **Built-in templates** for common project types
-- **Custom templates** support via volume mounting
-- **Template versioning** and updates
-- **Cookiecutter** compatibility
 
-## 🐳 Container Features
+Handlebars-based templating with:
 
-### Included Tools
-- Node.js, Python, Go, Rust toolchains
-- Git, Make, Bash
-- Docker & Docker Compose
-- Dagger CLI
-- Package managers (npm, pip, cargo, go mod)
-- Linters and formatters
-- Testing frameworks
+```javascript
+// Template variables
+{
+  projectName: "my-app",
+  projectType: "node",
+  features: ["docker", "testing", "devassist"],
+  author: "Developer Name",
+  license: "MIT"
+}
+```
 
-### Volumes
-- `/workspace` - Where projects are created
-- `/app/templates` - Custom templates
-- `/app/data` - Persistent metadata
+### DevAssist Integration Module
+
+Complete setup functionality:
+
+```javascript
+class DevAssistSetup {
+  setupDevAssist(projectPath, config) {
+    // Creates complete DevAssist infrastructure
+    this.createDirectoryStructure();
+    this.generateConfiguration();
+    this.createSubagents();
+    this.setupDocumentation();
+    this.initializeDatabases();
+  }
+}
+```
+
+## 🛠️ Available Tools
+
+### Core Tools
+
+| Tool | Description |
+|------|-------------|
+| `prjctzr:init` | Create new project with wizard |
+| `prjctzr:enhance` | Add features to existing project |
+| `prjctzr:dockerize` | Add Docker support |
+| `prjctzr:setup_ci` | Configure CI/CD pipelines |
+| `prjctzr:create_template` | Generate custom template |
+
+### Enhancement Flow
+
+```mermaid
+graph LR
+    A[Analyze Project] --> B[Detect Type]
+    B --> C[Show Features]
+    C --> D[User Selection]
+    D --> E[Apply Enhancements]
+    E --> F[Generate Files]
+    F --> G[Update Configs]
+```
+
+## 🎨 CLI Experience
+
+### Interactive Wizard
+
+```
+╔═══════════════════════════════════════════════════════╗
+║                  🚀 PRJCTZR v2.0                       ║
+║          Professional Project Initializer              ║
+╚═══════════════════════════════════════════════════════╝
+
+📝 Project Configuration
+──────────────────────────────────────────────────
+
+1. Project name: awesome-api
+2. Project type: Node.js
+3. Location: /Users/dev/projects/awesome-api
+
+🎯 Features
+──────────────────────────────────────────────────
+Select features for your project:
+
+  [✓] DevAssist Integration
+  [✓] Docker
+  [✓] CI/CD
+  [✓] Testing
+  [ ] Dagger
+  [✓] Documentation
+
+Creating project...
+  ✓ Directory structure
+  ✓ Project files
+  ✓ Docker configuration
+  ✓ DevAssist setup
+  ✓ CI/CD pipeline
+
+✨ Project created successfully!
+```
+
+## 🧪 Testing
+
+### Run Tests
+```bash
+npm test
+```
+
+### Test Project Creation
+```bash
+# Test all project types
+node scripts/test-integration.js
+```
+
+## 📊 Generated Project Structure
+
+### Example: Node.js with DevAssist
+
+```
+awesome-api/
+├── src/
+│   ├── index.js           # Entry point
+│   ├── routes/            # API routes
+│   ├── middleware/        # Express middleware
+│   └── utils/             # Utilities
+├── tests/
+│   ├── unit/              # Unit tests
+│   └── integration/       # Integration tests
+├── .devassist/
+│   ├── config.json        # DevAssist config
+│   ├── sessions/          # Session data
+│   ├── subagents/         # AI agents
+│   └── docs/              # Documentation
+├── .github/
+│   └── workflows/
+│       └── ci.yml         # GitHub Actions
+├── docker/
+│   └── Dockerfile         # Multi-stage build
+├── docker-compose.yml     # Development setup
+├── package.json           # Dependencies
+├── .env.example           # Environment template
+├── .gitignore            # Git ignores
+└── README.md             # Documentation
+```
+
+## 🔧 Configuration
 
 ### Environment Variables
-```bash
-DEFAULT_PROJECT_TYPE=auto
+Create `.env` file:
+
+```env
+# Templates
+DEFAULT_TEMPLATE_PATH=./templates
+CUSTOM_TEMPLATES_PATH=./custom-templates
+
+# Features
+DOCKER_ENABLED=true
+DEVASSIST_AUTO_SETUP=true
+
+# Defaults
 DEFAULT_LICENSE=MIT
-GITHUB_TOKEN=your-token
-DOCKER_REGISTRY=your-registry
+DEFAULT_NODE_VERSION=20
+DEFAULT_PYTHON_VERSION=3.11
 ```
 
-## 🚀 Dagger Integration
+### Custom Templates
 
-Prjctzr automatically generates Dagger pipelines for:
-- **Node.js**: Build, test, lint, security scan, Docker image
-- **Python**: Poetry build, pytest, ruff, mypy, bandit
-- **Go**: Build, test, golangci-lint, gosec
-- **Rust**: Cargo build, test, clippy, fmt
-- **Fullstack**: Frontend, backend, migrations, E2E tests
+Create custom project templates:
 
-Example pipeline usage:
+```javascript
+// templates/custom/my-template/config.json
+{
+  "name": "my-template",
+  "type": "custom",
+  "files": [
+    {
+      "path": "src/index.js",
+      "template": "index.hbs"
+    }
+  ],
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}
+```
+
+## 🤝 Integration
+
+### With DevAssist
+Seamless integration flow:
+
+1. Prjctzr creates project structure
+2. Sets up DevAssist if selected
+3. DevAssist handles runtime operations
+4. Perfect separation of concerns
+
+### With Claude Code
+Slash command workflow:
+
+```
+/prjctzr → /start-session → [development] → /end-session
+```
+
+## 📈 Roadmap
+
+### Coming Soon
+- [ ] More language templates (Java, C#, Swift)
+- [ ] Framework detection and auto-config
+- [ ] Project migration tools
+- [ ] Template marketplace
+- [ ] Team collaboration features
+
+### Future Enhancements
+- GraphQL API templates
+- Microservices orchestration
+- Serverless templates
+- Mobile app templates
+- ML/AI project templates
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Template not found**
 ```bash
-cd my-project
-node dagger.mjs
+# Verify templates directory
+ls templates/
+# Reinstall if missing
+npm install
 ```
 
-## 📊 Metrics
+**DevAssist setup fails**
+- Ensure DevAssist is installed
+- Check path in configuration
+- Verify Node.js version 20+
 
-The masking engine tracks:
-- Total tool calls
-- Success rate
-- Average execution time
-- Error rate
+**Docker commands fail**
+- Verify Docker is installed
+- Check Docker daemon is running
+- Ensure user has Docker permissions
 
-View metrics in Claude Code logs.
+## 📄 License
 
-## 🔧 Development
+MIT License - see LICENSE file
 
-### Project Structure
-```
-Prjctzr_MCP/
-├── index.js              # Main MCP server
-├── Dockerfile            # Multi-stage container
-├── docker-compose.yml    # Orchestration
-├── src/
-│   ├── masking/         # Tool masking engine
-│   ├── analyzer/        # Project analyzer
-│   ├── initializer/     # Project initializer
-│   ├── templates/       # Template manager
-│   └── containers/      # Container manager
-├── scripts/
-│   └── dagger-pipeline.js  # Dagger generators
-└── templates/           # Project templates
-```
+## 🔗 Links
 
-### Adding New Project Types
+- [GitHub Repository](https://github.com/PerformanceSuite/Prjctzr)
+- [DevAssist](https://github.com/PerformanceSuite/DevAssist)
+- [MCP Documentation](https://modelcontextprotocol.io)
+- [Report Issues](https://github.com/PerformanceSuite/Prjctzr/issues)
 
-1. Add template to `templates/`
-2. Update analyzer in `src/analyzer/`
-3. Add Dagger pipeline in `scripts/dagger-pipeline.js`
-4. Update Docker tools if needed
+## 👥 Contributors
 
-## 🎯 Benefits Over Manual Setup
-
-1. **Consistency**: Same high-quality setup every time
-2. **Speed**: Minutes instead of hours
-3. **Best Practices**: Industry standards built-in
-4. **No Configuration**: Works out of the box
-5. **Extensible**: Easy to add new features
-6. **Isolated**: No global tool pollution
-
-## 📝 License
-
-MIT
-
-## 🤝 Contributing
-
-See CONTRIBUTING.md for guidelines.
-
-## 🔗 Related Projects
-
-- [DevAssist](https://github.com/PerformanceSuite/DevAssist) - Development assistant with masking
-- [ToolMasker](https://github.com/yourusername/toolmasker) - Tool masking research
+Built with ❤️ by the Performance Suite team.
 
 ---
 
-**Note**: After making changes, restart Claude Code for the new configuration to take effect.
+*Prjctzr v2.0.0 - Professional Project Initializer*
+*Part of the Custom MCP Servers Suite*

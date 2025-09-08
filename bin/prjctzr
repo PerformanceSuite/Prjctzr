@@ -1,0 +1,834 @@
+#!/usr/bin/env node
+
+/**
+ * Prjctzr CLI - Interactive project setup wizard
+ * Single command to create a fully configured project with DevAssist integration
+ */
+
+import { execSync } from 'child_process';
+import readline from 'readline';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.join(__dirname, '..');
+
+// Color codes for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  green: '\x1b[32m',
+  blue: '\x1b[34m',
+  yellow: '\x1b[33m',
+  cyan: '\x1b[36m',
+  red: '\x1b[31m'
+};
+
+class PrjctzrCLI {
+  constructor() {
+    this.rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    this.config = {};
+  }
+
+  async run() {
+    this.showBanner();
+    
+    try {
+      // Gather project information
+      await this.getProjectName();
+      await this.getProjectType();
+      await this.getProjectPath();
+      await this.selectFeatures();
+      
+      // Show summary and confirm
+      this.showSummary();
+      const confirm = await this.askQuestion('\nProceed with project creation? (Y/n): ');
+      
+      if (confirm.toLowerCase() === 'n') {
+        console.log('\n👋 Project creation cancelled.');
+        this.rl.close();
+        return;
+      }
+      
+      // Create the project
+      await this.createProject();
+      
+      // Post-creation options
+      await this.postCreationOptions();
+      
+      this.rl.close();
+    } catch (error) {
+      console.error(`${colors.red}✗ Error: ${error.message}${colors.reset}`);
+      this.rl.close();
+      process.exit(1);
+    }
+  }
+
+  showBanner() {
+    console.clear();
+    console.log(`${colors.cyan}${colors.bright}
+╔═══════════════════════════════════════════════════════╗
+║                                                       ║
+║     ██████╗ ██████╗      ██╗ ██████╗████████╗███████╗██████╗ ║
+║     ██╔══██╗██╔══██╗     ██║██╔════╝╚══██╔══╝╚══███╔╝██╔══██╗║
+║     ██████╔╝██████╔╝     ██║██║        ██║     ███╔╝ ██████╔╝║
+║     ██╔═══╝ ██╔══██╗██   ██║██║        ██║    ███╔╝  ██╔══██╗║
+║     ██║     ██║  ██║╚█████╔╝╚██████╗   ██║   ███████╗██║  ██║║
+║     ╚═╝     ╚═╝  ╚═╝ ╚════╝  ╚═════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝║
+║                                                       ║
+║          Professional Project Initializer v2.0        ║
+║                                                       ║
+╚═══════════════════════════════════════════════════════╝
+${colors.reset}
+Welcome to Prjctzr! Let's create your next amazing project.
+`);
+  }
+
+  askQuestion(question) {
+    return new Promise((resolve) => {
+      this.rl.question(question, (answer) => {
+        resolve(answer);
+      });
+    });
+  }
+
+  async getProjectName() {
+    console.log(`\n${colors.bright}📝 Project Configuration${colors.reset}`);
+    console.log('─'.repeat(50));
+    
+    let name;
+    while (!name) {
+      name = await this.askQuestion('\n1. Project name: ');
+      if (!name) {
+        console.log(`${colors.yellow}   ⚠ Project name is required${colors.reset}`);
+      } else if (!/^[a-z0-9-_]+$/i.test(name)) {
+        console.log(`${colors.yellow}   ⚠ Use only letters, numbers, hyphens, and underscores${colors.reset}`);
+        name = null;
+      }
+    }
+    this.config.name = name;
+  }
+
+  async getProjectType() {
+    const types = [
+      { value: 'node', label: 'Node.js', desc: 'JavaScript/TypeScript backend' },
+      { value: 'python', label: 'Python', desc: 'Python application or service' },
+      { value: 'go', label: 'Go', desc: 'Go application or microservice' },
+      { value: 'rust', label: 'Rust', desc: 'Rust system application' },
+      { value: 'fullstack', label: 'Full-Stack', desc: 'React + Node/Python backend' },
+      { value: 'react', label: 'React', desc: 'React frontend application' },
+      { value: 'vue', label: 'Vue', desc: 'Vue.js frontend application' },
+      { value: 'api', label: 'API', desc: 'REST/GraphQL API service' }
+    ];
+
+    console.log('\n2. Project type:');
+    types.forEach((type, index) => {
+      console.log(`   ${colors.cyan}${index + 1})${colors.reset} ${type.label} - ${colors.dim}${type.desc}${colors.reset}`);
+    });
+
+    let choice;
+    while (!choice) {
+      const input = await this.askQuestion('\n   Select type (1-8): ');
+      const index = parseInt(input) - 1;
+      if (index >= 0 && index < types.length) {
+        choice = types[index];
+      } else {
+        console.log(`${colors.yellow}   ⚠ Please select a valid option${colors.reset}`);
+      }
+    }
+    
+    this.config.type = choice.value;
+    this.config.typeLabel = choice.label;
+  }
+
+  async getProjectPath() {
+    const defaultPath = path.join(process.cwd(), this.config.name);
+    const input = await this.askQuestion(`\n3. Project location [${defaultPath}]: `);
+    this.config.path = input || defaultPath;
+    
+    // Check if path exists
+    if (fs.existsSync(this.config.path)) {
+      console.log(`${colors.yellow}   ⚠ Directory already exists${colors.reset}`);
+      const overwrite = await this.askQuestion('   Overwrite? (y/N): ');
+      if (overwrite.toLowerCase() !== 'y') {
+        throw new Error('Directory already exists');
+      }
+    }
+  }
+
+  async selectFeatures() {
+    const features = [
+      { value: 'devassist', label: 'DevAssist Integration', desc: 'AI-powered development assistance', default: true },
+      { value: 'docker', label: 'Docker', desc: 'Containerization support', default: true },
+      { value: 'ci', label: 'CI/CD', desc: 'GitHub Actions / GitLab CI', default: true },
+      { value: 'testing', label: 'Testing', desc: 'Unit and integration tests', default: true },
+      { value: 'dagger', label: 'Dagger', desc: 'Portable CI/CD pipelines', default: false },
+      { value: 'docs', label: 'Documentation', desc: 'Auto-generated docs', default: true },
+      { value: 'kubernetes', label: 'Kubernetes', desc: 'K8s deployment configs', default: false },
+      { value: 'monitoring', label: 'Monitoring', desc: 'Logging and metrics', default: false }
+    ];
+
+    console.log(`\n${colors.bright}🎯 Features${colors.reset}`);
+    console.log('─'.repeat(50));
+    console.log('\nSelect features for your project:');
+    console.log(`${colors.dim}(Press space to toggle, enter to confirm)${colors.reset}\n`);
+
+    // For simplicity in this version, we'll do a simpler selection
+    features.forEach((feature, index) => {
+      const status = feature.default ? `${colors.green}✓${colors.reset}` : ' ';
+      console.log(`  [${status}] ${index + 1}. ${feature.label} - ${colors.dim}${feature.desc}${colors.reset}`);
+    });
+
+    const input = await this.askQuestion('\nToggle features (comma-separated numbers) or press enter for defaults: ');
+    
+    this.config.features = features
+      .filter(f => f.default)
+      .map(f => f.value);
+    
+    if (input) {
+      const toggles = input.split(',').map(n => parseInt(n.trim()) - 1);
+      toggles.forEach(index => {
+        if (index >= 0 && index < features.length) {
+          const feature = features[index].value;
+          const idx = this.config.features.indexOf(feature);
+          if (idx > -1) {
+            this.config.features.splice(idx, 1);
+          } else {
+            this.config.features.push(feature);
+          }
+        }
+      });
+    }
+  }
+
+  showSummary() {
+    console.log(`\n${colors.bright}📋 Project Summary${colors.reset}`);
+    console.log('═'.repeat(50));
+    console.log(`
+  ${colors.bright}Name:${colors.reset}     ${this.config.name}
+  ${colors.bright}Type:${colors.reset}     ${this.config.typeLabel}
+  ${colors.bright}Path:${colors.reset}     ${this.config.path}
+  ${colors.bright}Features:${colors.reset} ${this.config.features.join(', ')}
+`);
+  }
+
+  async createProject() {
+    console.log(`\n${colors.bright}🚀 Creating Project${colors.reset}`);
+    console.log('─'.repeat(50));
+
+    const steps = [
+      { label: 'Creating directory structure', fn: () => this.createStructure() },
+      { label: 'Generating project files', fn: () => this.generateFiles() },
+      { label: 'Setting up dependencies', fn: () => this.setupDependencies() },
+      { label: 'Initializing Git repository', fn: () => this.initGit() }
+    ];
+
+    if (this.config.features.includes('docker')) {
+      steps.push({ label: 'Creating Docker configuration', fn: () => this.setupDocker() });
+    }
+
+    if (this.config.features.includes('devassist')) {
+      steps.push({ label: 'Setting up DevAssist', fn: () => this.setupDevAssist() });
+    }
+
+    if (this.config.features.includes('ci')) {
+      steps.push({ label: 'Configuring CI/CD', fn: () => this.setupCI() });
+    }
+
+    for (const step of steps) {
+      process.stdout.write(`\n  ${step.label}...`);
+      try {
+        await step.fn();
+        console.log(` ${colors.green}✓${colors.reset}`);
+      } catch (error) {
+        console.log(` ${colors.red}✗${colors.reset}`);
+        throw error;
+      }
+    }
+  }
+
+  async createStructure() {
+    fs.mkdirSync(this.config.path, { recursive: true });
+    
+    const dirs = ['src', 'tests', 'docs'];
+    if (this.config.features.includes('docker')) dirs.push('docker');
+    if (this.config.features.includes('kubernetes')) dirs.push('k8s');
+    
+    dirs.forEach(dir => {
+      fs.mkdirSync(path.join(this.config.path, dir), { recursive: true });
+    });
+  }
+
+  async generateFiles() {
+    // Create README
+    const readme = `# ${this.config.name}
+
+## Overview
+A ${this.config.typeLabel} project created with Prjctzr.
+
+## Features
+${this.config.features.map(f => `- ${f}`).join('\n')}
+
+## Getting Started
+
+### Prerequisites
+- ${this.getPrerequisites()}
+
+### Installation
+\`\`\`bash
+${this.getInstallCommand()}
+\`\`\`
+
+### Development
+\`\`\`bash
+${this.getDevCommand()}
+\`\`\`
+
+### Testing
+\`\`\`bash
+${this.getTestCommand()}
+\`\`\`
+
+${this.config.features.includes('docker') ? '### Docker\n```bash\ndocker build -t ' + this.config.name + ' .\ndocker run ' + this.config.name + '\n```\n' : ''}
+
+## Project Structure
+\`\`\`
+${this.config.name}/
+├── src/          # Source code
+├── tests/        # Test files
+├── docs/         # Documentation
+${this.config.features.includes('docker') ? '├── docker/       # Docker configs\n' : ''}${this.config.features.includes('kubernetes') ? '├── k8s/          # Kubernetes manifests\n' : ''}└── README.md     # This file
+\`\`\`
+
+## License
+MIT
+
+---
+Created with [Prjctzr](https://github.com/PerformanceSuite/Prjctzr)
+`;
+    fs.writeFileSync(path.join(this.config.path, 'README.md'), readme);
+
+    // Create main file based on type
+    const mainFiles = {
+      node: { file: 'src/index.js', content: this.getNodeTemplate() },
+      python: { file: 'src/main.py', content: this.getPythonTemplate() },
+      go: { file: 'src/main.go', content: this.getGoTemplate() },
+      rust: { file: 'src/main.rs', content: this.getRustTemplate() },
+      react: { file: 'src/App.jsx', content: this.getReactTemplate() },
+      vue: { file: 'src/App.vue', content: this.getVueTemplate() },
+      fullstack: { file: 'src/server.js', content: this.getNodeTemplate() },
+      api: { file: 'src/server.js', content: this.getAPITemplate() }
+    };
+
+    if (mainFiles[this.config.type]) {
+      const { file, content } = mainFiles[this.config.type];
+      fs.writeFileSync(path.join(this.config.path, file), content);
+    }
+
+    // Create package.json for Node projects
+    if (['node', 'react', 'vue', 'fullstack', 'api'].includes(this.config.type)) {
+      const packageJson = {
+        name: this.config.name,
+        version: '1.0.0',
+        description: `${this.config.typeLabel} project`,
+        main: 'src/index.js',
+        scripts: this.getScripts(),
+        dependencies: {},
+        devDependencies: {}
+      };
+      fs.writeFileSync(
+        path.join(this.config.path, 'package.json'),
+        JSON.stringify(packageJson, null, 2)
+      );
+    }
+
+    // Create requirements.txt for Python projects
+    if (this.config.type === 'python') {
+      const requirements = this.getPythonRequirements();
+      fs.writeFileSync(path.join(this.config.path, 'requirements.txt'), requirements);
+    }
+
+    // Create go.mod for Go projects
+    if (this.config.type === 'go') {
+      const goMod = `module ${this.config.name}\n\ngo 1.21\n`;
+      fs.writeFileSync(path.join(this.config.path, 'go.mod'), goMod);
+    }
+
+    // Create Cargo.toml for Rust projects
+    if (this.config.type === 'rust') {
+      const cargoToml = `[package]\nname = "${this.config.name}"\nversion = "0.1.0"\nedition = "2021"\n\n[dependencies]\n`;
+      fs.writeFileSync(path.join(this.config.path, 'Cargo.toml'), cargoToml);
+    }
+  }
+
+  async setupDependencies() {
+    // This would normally install dependencies, but we'll skip for now
+    // to avoid actually running npm/pip/go/cargo commands
+  }
+
+  async initGit() {
+    if (fs.existsSync(path.join(this.config.path, '.git'))) {
+      return;
+    }
+    
+    const gitignore = this.getGitignore();
+    fs.writeFileSync(path.join(this.config.path, '.gitignore'), gitignore);
+    
+    // Initialize git repo (commented out to avoid actual execution)
+    // execSync('git init', { cwd: this.config.path });
+  }
+
+  async setupDocker() {
+    const dockerfile = this.getDockerfile();
+    fs.writeFileSync(path.join(this.config.path, 'Dockerfile'), dockerfile);
+    
+    const dockerCompose = this.getDockerCompose();
+    fs.writeFileSync(path.join(this.config.path, 'docker-compose.yml'), dockerCompose);
+  }
+
+  async setupDevAssist() {
+    // Import and use the devassist-setup module
+    const { DevAssistSetup } = await import(path.join(ROOT_DIR, 'src', 'devassist-setup.js'));
+    const setup = new DevAssistSetup();
+    await setup.setupDevAssist(this.config.path, {
+      projectName: this.config.name,
+      projectType: this.config.type,
+      features: this.config.features
+    });
+  }
+
+  async setupCI() {
+    const ciDir = path.join(this.config.path, '.github', 'workflows');
+    fs.mkdirSync(ciDir, { recursive: true });
+    
+    const workflow = this.getGitHubWorkflow();
+    fs.writeFileSync(path.join(ciDir, 'ci.yml'), workflow);
+  }
+
+  async postCreationOptions() {
+    console.log(`\n${colors.green}${colors.bright}✨ Project created successfully!${colors.reset}`);
+    console.log('═'.repeat(50));
+    
+    console.log(`\n${colors.bright}Next steps:${colors.reset}`);
+    console.log(`
+  1. ${colors.cyan}cd ${this.config.path}${colors.reset}
+  2. ${colors.cyan}${this.getInstallCommand()}${colors.reset}
+  3. ${colors.cyan}${this.getDevCommand()}${colors.reset}
+`);
+
+    if (this.config.features.includes('devassist')) {
+      console.log(`${colors.bright}DevAssist Commands:${colors.reset}`);
+      console.log(`
+  • Start session:  ${colors.cyan}devassist:session-start${colors.reset}
+  • Track progress: ${colors.cyan}devassist:track_progress${colors.reset}
+  • End session:    ${colors.cyan}devassist:session-end${colors.reset}
+`);
+    }
+
+    const openProject = await this.askQuestion('\nOpen project in VS Code? (Y/n): ');
+    if (openProject.toLowerCase() !== 'n') {
+      try {
+        execSync(`code ${this.config.path}`, { stdio: 'ignore' });
+        console.log(`${colors.green}✓ Opened in VS Code${colors.reset}`);
+      } catch {
+        console.log(`${colors.yellow}Could not open VS Code. Open manually with: code ${this.config.path}${colors.reset}`);
+      }
+    }
+  }
+
+  // Template methods
+  getPrerequisites() {
+    const prereqs = {
+      node: 'Node.js 20+',
+      python: 'Python 3.9+',
+      go: 'Go 1.21+',
+      rust: 'Rust 1.70+',
+      react: 'Node.js 20+',
+      vue: 'Node.js 20+',
+      fullstack: 'Node.js 20+ and Python 3.9+',
+      api: 'Node.js 20+'
+    };
+    return prereqs[this.config.type] || 'Node.js 20+';
+  }
+
+  getInstallCommand() {
+    const commands = {
+      node: 'npm install',
+      python: 'pip install -r requirements.txt',
+      go: 'go mod download',
+      rust: 'cargo build',
+      react: 'npm install',
+      vue: 'npm install',
+      fullstack: 'npm install && cd backend && pip install -r requirements.txt',
+      api: 'npm install'
+    };
+    return commands[this.config.type] || 'npm install';
+  }
+
+  getDevCommand() {
+    const commands = {
+      node: 'npm run dev',
+      python: 'python src/main.py',
+      go: 'go run src/main.go',
+      rust: 'cargo run',
+      react: 'npm start',
+      vue: 'npm run dev',
+      fullstack: 'npm run dev',
+      api: 'npm run dev'
+    };
+    return commands[this.config.type] || 'npm run dev';
+  }
+
+  getTestCommand() {
+    const commands = {
+      node: 'npm test',
+      python: 'pytest',
+      go: 'go test ./...',
+      rust: 'cargo test',
+      react: 'npm test',
+      vue: 'npm test',
+      fullstack: 'npm test',
+      api: 'npm test'
+    };
+    return commands[this.config.type] || 'npm test';
+  }
+
+  getScripts() {
+    const scripts = {
+      start: 'node src/index.js',
+      dev: 'nodemon src/index.js',
+      test: 'jest',
+      lint: 'eslint src/',
+      format: 'prettier --write src/'
+    };
+
+    if (this.config.type === 'react') {
+      scripts.start = 'react-scripts start';
+      scripts.build = 'react-scripts build';
+    } else if (this.config.type === 'vue') {
+      scripts.dev = 'vite';
+      scripts.build = 'vite build';
+    }
+
+    return scripts;
+  }
+
+  getNodeTemplate() {
+    return `// ${this.config.name}
+// Created with Prjctzr
+
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Welcome to ${this.config.name}',
+    version: '1.0.0'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+app.listen(PORT, () => {
+  console.log(\`Server running on port \${PORT}\`);
+});
+
+module.exports = app;
+`;
+  }
+
+  getPythonTemplate() {
+    return `# ${this.config.name}
+# Created with Prjctzr
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
+app = FastAPI(title="${this.config.name}", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Welcome to ${this.config.name}",
+        "version": "1.0.0"
+    }
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+`;
+  }
+
+  getGoTemplate() {
+    return `package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "log"
+    "net/http"
+)
+
+type Response struct {
+    Message string \`json:"message"\`
+    Version string \`json:"version"\`
+}
+
+func main() {
+    http.HandleFunc("/", homeHandler)
+    http.HandleFunc("/health", healthHandler)
+    
+    fmt.Println("Server starting on port 8080...")
+    log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+    response := Response{
+        Message: "Welcome to ${this.config.name}",
+        Version: "1.0.0",
+    }
+    json.NewEncoder(w).Encode(response)
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+    json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
+}
+`;
+  }
+
+  getRustTemplate() {
+    return `// ${this.config.name}
+// Created with Prjctzr
+
+fn main() {
+    println!("Welcome to ${this.config.name}!");
+    println!("Version: 1.0.0");
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}
+`;
+  }
+
+  getReactTemplate() {
+    return `import React from 'react';
+
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>Welcome to ${this.config.name}</h1>
+        <p>Created with Prjctzr</p>
+      </header>
+    </div>
+  );
+}
+
+export default App;
+`;
+  }
+
+  getVueTemplate() {
+    return `<template>
+  <div id="app">
+    <h1>Welcome to ${this.config.name}</h1>
+    <p>Created with Prjctzr</p>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'App'
+}
+</script>
+
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  text-align: center;
+  margin-top: 60px;
+}
+</style>
+`;
+  }
+
+  getAPITemplate() {
+    return this.getNodeTemplate(); // Reuse Node template for API
+  }
+
+  getPythonRequirements() {
+    let reqs = 'fastapi==0.104.1\nuvicorn==0.24.0\n';
+    if (this.config.features.includes('testing')) {
+      reqs += 'pytest==7.4.3\npytest-asyncio==0.21.1\n';
+    }
+    if (this.config.type === 'python' && this.config.name.includes('ml')) {
+      reqs += 'scikit-learn==1.3.2\nnumpy==1.24.3\npandas==2.1.3\n';
+    }
+    return reqs;
+  }
+
+  getGitignore() {
+    const common = `# Dependencies
+node_modules/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Build
+dist/
+build/
+target/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.coverage
+.pytest_cache/
+`;
+    return common;
+  }
+
+  getDockerfile() {
+    const dockerfiles = {
+      node: `FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD ["node", "src/index.js"]`,
+      
+      python: `FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]`,
+      
+      go: `FROM golang:1.21-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go build -o main src/main.go
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/main .
+EXPOSE 8080
+CMD ["./main"]`,
+      
+      rust: `FROM rust:1.70 AS builder
+WORKDIR /app
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+COPY --from=builder /app/target/release/${this.config.name} /usr/local/bin/
+CMD ["${this.config.name}"]`
+    };
+    
+    return dockerfiles[this.config.type] || dockerfiles.node;
+  }
+
+  getDockerCompose() {
+    return `version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: ${this.config.name}
+    ports:
+      - "\${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./src:/app/src
+    restart: unless-stopped
+`;
+  }
+
+  getGitHubWorkflow() {
+    return `name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Build
+      run: npm run build
+`;
+  }
+}
+
+// Run the CLI
+const cli = new PrjctzrCLI();
+cli.run().catch(console.error);

@@ -4,6 +4,9 @@
   "description": "Intelligent project initialization and setup MCP server with built-in masking",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "prjctzr": "./bin/prjctzr"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",

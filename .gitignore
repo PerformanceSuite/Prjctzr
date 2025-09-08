@@ -39,3 +39,11 @@ docker-compose.override.yml
 data/
 *.db
 *.db-journal
+
+# Archives and backups
+# Session files
+.devassist/sessions/*.log
+.devassist/archive/
+# Test artifacts
+# OS
+Thumbs.db
