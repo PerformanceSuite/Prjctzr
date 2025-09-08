@@ -17,6 +17,7 @@ import { ProjectAnalyzer } from './src/analyzer/analyzer.js';
 import { ProjectInitializer } from './src/initializer/initializer.js';
 import { TemplateManager } from './src/templates/manager.js';
 import { ContainerManager } from './src/containers/manager.js';
+import { DevAssistSetup } from './src/devassist-setup.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -41,9 +42,31 @@ const server = new Server({
 const tools = [
   {
     name: 'prjctzr:init',
-    description: 'Initialize a new project with all best practices',
+    description: 'Initialize a new project with all best practices. Options: type (node/python/go/rust/fullstack/auto), features array (docker/dagger/devassist/testing/ci/docs)',
     handler: async (input) => {
-      const { name, type, features } = input;
+      // Provide helpful defaults and suggestions if not specified
+      const { 
+        name, 
+        type = 'auto',
+        features = []
+      } = input;
+      
+      // If no input provided, return helpful prompt
+      if (!name) {
+        return {
+          error: 'Project name required',
+          usage: 'prjctzr:init name="project-name" type="node|python|go|rust|fullstack" features=["docker", "dagger", "devassist", "testing", "ci", "docs"]',
+          availableTypes: ['node', 'python', 'go', 'rust', 'fullstack', 'auto'],
+          availableFeatures: {
+            docker: 'Containerization with Docker & docker-compose',
+            dagger: 'CI/CD pipelines with Dagger',
+            devassist: 'Development tracking with DevAssist',
+            testing: 'Testing framework setup',
+            ci: 'GitHub Actions / GitLab CI',
+            docs: 'Documentation with MkDocs/Sphinx'
+          }
+        };
+      }
       
       // Analyze project requirements
       const analysis = await analyzer.analyze({ name, type });
@@ -66,6 +89,58 @@ const tools = [
       
       if (features?.includes('dagger')) {
         await containerManager.setupDagger(result.path);
+      }
+      
+      // Check if DevAssist should be auto-initialized
+      const setupDevAssist = features?.includes('devassist');
+      
+      // Setup DevAssist infrastructure if requested
+      if (setupDevAssist) {
+        const devAssistSetup = new DevAssistSetup();
+        
+        // Detect technologies for DevAssist
+        const detectedTech = [
+          type, // Primary language
+          ...(features?.includes('docker') ? ['Docker'] : []),
+          ...(features?.includes('dagger') ? ['Dagger'] : []),
+          // Add more detected technologies here
+        ].filter(Boolean);
+        
+        const devAssistResult = await devAssistSetup.setupDevAssist(
+          result.path,
+          name,
+          type,
+          detectedTech
+        );
+        
+        result.devassist = {
+          status: devAssistResult.success ? 'ready' : 'failed',
+          message: devAssistResult.message,
+          structure: devAssistResult.structure,
+          next_steps: 'Run devassist:session-start to begin tracking'
+        };
+        
+        result.message = `✅ Project "${name}" created successfully at ${result.path}\n` +
+                         `🔗 DevAssist infrastructure created - ready for sessions\n` +
+                         `   Run: devassist:session-start description="Initial development"`;
+      } else {
+        result.suggestions = {
+          devassist: {
+            message: 'Would you like to set up DevAssist to track this project?',
+            command: 'devassist:initproject',
+            params: {
+              name: name,
+              path: result.path,
+              description: `${type} project created with Prjctzr`,
+              tech_stack: type
+            }
+          }
+        };
+        
+        result.message = `✅ Project "${name}" created successfully at ${result.path}\n\n` +
+                         `💡 Tip: Use DevAssist to track architectural decisions and progress:\n` +
+                         `   Run: devassist:initproject with name="${name}" and path="${result.path}"\n` +
+                         `   Or include 'devassist' in features array when creating projects`;
       }
       
       return result;
@@ -170,7 +245,8 @@ function getExposedFields(toolName) {
       features: {
         type: 'array',
         items: { type: 'string' },
-        description: 'Features to include',
+        description: 'Features to include (docker, dagger, devassist)',
+        examples: [['docker', 'devassist'], ['dagger'], ['devassist']],
       },
     },
     'prjctzr:enhance': {
