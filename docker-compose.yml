@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  prjctzr:
+    build: .
+    image: prjctzr-mcp:latest
+    container_name: prjctzr-server
+    restart: unless-stopped
+    volumes:
+      # Mount the workspace directory (where projects will be created)
+      - ${WORKSPACE_DIR:-./workspace}:/workspace
+      
+      # Mount custom templates
+      - ${TEMPLATES_DIR:-./custom-templates}:/app/templates/custom
+      
+      # Persistent data (project metadata, history, etc.)
+      - prjctzr-data:/app/data
+      
+      # Docker socket for container management (if needed)
+      - /var/run/docker.sock:/var/run/docker.sock
+      
+    environment:
+      # MCP Configuration
+      - NODE_ENV=production
+      
+      # Project defaults
+      - DEFAULT_PROJECT_TYPE=${DEFAULT_PROJECT_TYPE:-auto}
+      - DEFAULT_LICENSE=${DEFAULT_LICENSE:-MIT}
+      
+      # GitHub integration
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_ORG=${GITHUB_ORG}
+      
+      # Cloud providers (optional)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
+      
+      # Container registry (optional)
+      - DOCKER_REGISTRY=${DOCKER_REGISTRY}
+      - DOCKER_USERNAME=${DOCKER_USERNAME}
+      - DOCKER_PASSWORD=${DOCKER_PASSWORD}
+      
+    ports:
+      # Expose MCP port if needed (for non-stdio transport)
+      - "9999:9999"
+    
+    networks:
+      - prjctzr-net
+
+  # Optional: Dagger Engine for CI/CD pipelines
+  dagger-engine:
+    image: registry.dagger.io/engine:latest
+    container_name: dagger-engine
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - dagger-data:/var/lib/dagger
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - prjctzr-net
+    profiles:
+      - dagger
+
+  # Optional: Template repository server
+  template-server:
+    image: nginx:alpine
+    container_name: template-server
+    restart: unless-stopped
+    volumes:
+      - ./templates:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+    networks:
+      - prjctzr-net
+    profiles:
+      - templates
+
+networks:
+  prjctzr-net:
+    driver: bridge
+
+volumes:
+  prjctzr-data:
+    driver: local
+  dagger-data:
+    driver: local

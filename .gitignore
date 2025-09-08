@@ -1,10 +1,10 @@
-# Dependencies
+# Node
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+.npm
+*.log
 
 # Environment
 .env
@@ -19,48 +19,23 @@ yarn.lock
 *~
 .DS_Store
 
-# Build outputs
+# Build
 dist/
 build/
-*.log
 
 # Testing
 coverage/
-*.lcov
 .nyc_output/
 
-# Project-specific data
-.devassist/data/
-.devassist/terminal_logs/
-.sessions/
-*.db
-*.sqlite
-*.lance
+# Archives
+archive-v1/
+.archive/
+.backups/
 
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Test projects (keep structure but not content)
-test-*/
-!test-*/.gitkeep
-
-# Screenshots and media
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.mp4
-*.mov
-
-# Archive directories
-archive/
-old/
-backup/
+# Docker
+docker-compose.override.yml
 
 # MCP specific
-.mcp.json.backup
-
-# DevAssist MCP (if added as submodule, this will be handled by git)
-# devassist-mcp/
+data/
+*.db
+*.db-journal

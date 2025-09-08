@@ -1,0 +1,35 @@
+{
+  "name": "prjctzr-mcp",
+  "version": "2.0.0",
+  "description": "Intelligent project initialization and setup MCP server with built-in masking",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "docker:build": "docker build -t prjctzr-mcp .",
+    "docker:run": "docker run -it --rm -v $(pwd):/workspace -v /var/run/docker.sock:/var/run/docker.sock prjctzr-mcp",
+    "dagger:pipeline": "node scripts/dagger-pipeline.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "zod": "^3.24.1",
+    "js-yaml": "^4.1.0",
+    "handlebars": "^4.7.8",
+    "simple-git": "^3.27.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^11.0.0",
+    "dockerode": "^4.0.2",
+    "execa": "^9.5.2",
+    "chalk": "^5.3.0",
+    "ora": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@dagger-io/dagger": "^0.15.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
