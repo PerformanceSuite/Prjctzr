@@ -84,7 +84,8 @@ export class DevAssistSetup {
       '.devassist/artifacts',
       '.devassist/reports',
       '.devassist/templates',
-      '.devassist/cache'
+      '.devassist/cache',
+      '.claude/commands'  // Add Claude Code commands directory
     ];
     
     for (const dir of directories) {
@@ -93,6 +94,41 @@ export class DevAssistSetup {
     }
     
     console.log('  ✓ Created DevAssist directory structure');
+    
+    // Copy Claude Code slash command files
+    await this.copyClaudeCommands(projectPath);
+  }
+
+  /**
+   * Copy Claude Code slash command files
+   */
+  async copyClaudeCommands(projectPath) {
+    try {
+      // Get the source directory (Prjctzr's .claude/commands)
+      const sourceDir = path.join(path.dirname(path.dirname(import.meta.url.replace('file://', ''))), '.claude', 'commands');
+      const targetDir = path.join(projectPath, '.claude', 'commands');
+      
+      // Ensure target directory exists
+      await fs.mkdir(targetDir, { recursive: true });
+      
+      // Copy all command files
+      const commandFiles = ['prjctzr.md', 'start-session.md', 'end-session.md'];
+      
+      for (const file of commandFiles) {
+        const sourcePath = path.join(sourceDir, file);
+        const targetPath = path.join(targetDir, file);
+        
+        try {
+          await fs.copyFile(sourcePath, targetPath);
+        } catch (err) {
+          console.warn(`  ⚠ Could not copy ${file}: ${err.message}`);
+        }
+      }
+      
+      console.log('  ✓ Copied Claude Code slash commands');
+    } catch (error) {
+      console.warn('  ⚠ Could not copy Claude commands:', error.message);
+    }
   }
 
   /**
@@ -733,13 +769,13 @@ devassist:session-end
 \`\`\`
 
 ## Available Agents
-${technologies.includes('Dagger') ? '- `dagger-pipeline` - CI/CD pipeline management' : ''}
-${technologies.includes('Kubernetes') ? '- `k8s-manager` - Kubernetes operations' : ''}
-${technologies.includes('Docker') ? '- `docker-manager` - Container management' : ''}
-${technologies.includes('Terraform') ? '- `terraform-agent` - Infrastructure provisioning' : ''}
-- `git-workflow` - Version control operations
-- `test-runner` - Test execution
-- `cleanup-agent` - File organization
+${technologies.includes('Dagger') ? '- \`dagger-pipeline\` - CI/CD pipeline management' : ''}
+${technologies.includes('Kubernetes') ? '- \`k8s-manager\` - Kubernetes operations' : ''}
+${technologies.includes('Docker') ? '- \`docker-manager\` - Container management' : ''}
+${technologies.includes('Terraform') ? '- \`terraform-agent\` - Infrastructure provisioning' : ''}
+- \`git-workflow\` - Version control operations
+- \`test-runner\` - Test execution
+- \`cleanup-agent\` - File organization
 
 ## Recording Decisions
 \`\`\`bash

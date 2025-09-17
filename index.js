@@ -35,7 +35,9 @@ const server = new Server({
   name: 'prjctzr',
   version: '2.0.0',
 }, {
-  capabilities: { tools: {} },
+  capabilities: { 
+    tools: {}
+  },
 });
 
 // Define masked tools

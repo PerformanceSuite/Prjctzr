@@ -31,8 +31,8 @@ error_handler() {
 }
 
 # Configuration
-PRJCTZR_HOME="${PRJCTZR_HOME:-$HOME/Projects/Prjctzr}"
-DEVASSIST_MCP_PATH="$PRJCTZR_HOME/devassist-mcp"
+PRJCTZR_HOME="${PRJCTZR_HOME:-$HOME/Projects/custom_mcp/prjctzr}"
+DEVASSIST_MCP_PATH="$HOME/Projects/custom_mcp/DevAssist"
 TEMPLATES_PATH="$PRJCTZR_HOME/templates"
 PROJECT_DIR="$(pwd)"
 PROJECT_NAME="$(basename "$PROJECT_DIR")"
@@ -251,8 +251,8 @@ const config = {
 
 // Try to find DevAssist MCP
 const possiblePaths = [
-  path.join(process.env.HOME, 'Projects/Prjctzr/devassist-mcp/index.js'),
-  '/Users/danielconnolly/Projects/Custom_MCP/DevAssist_MCP/index.js'
+  path.join(process.env.HOME, 'Projects/custom_mcp/DevAssist/index.js'),
+  '/Users/danielconnolly/Projects/custom_mcp/DevAssist/index.js'
 ];
 
 let devassistPath = null;
